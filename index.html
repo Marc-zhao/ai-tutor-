@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marc's AI Tutor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;background:#0f0f10;color:#e8e8e8;line-height:1.5;}
+:root{
+  --bg:#0f0f10;--sf:#1a1a1c;--sf2:#222224;--sf3:#2a2a2d;
+  --bd:#2e2e32;--bd2:#3a3a3f;--tx:#e8e8e8;--mu:#888890;--su:#555560;
+  --ac:#6c8ebf;--ac2:#4a6fa5;--gold:#c9a84c;
+  --gr:#4a9c6d;--gr-bg:rgba(74,156,109,0.12);
+  --rd-bg:rgba(192,57,43,0.12);--am:#d4813a;--am-bg:rgba(212,129,58,0.12);
+  --r:10px;--rs:6px;
+}
+/* ── SCREENS ── */
+.screen{display:none;height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── LANDING ── */
+#s-landing{overflow-y:auto;}
+.land-nav{height:56px;display:flex;align-items:center;padding:0 48px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0;gap:16px;}
+.land-logo{font-size:16px;font-weight:600;letter-spacing:-.3px;}
+.land-logo span{color:var(--gold);}
+.land-nav-r{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.btn-ghost{padding:7px 18px;border:1px solid var(--bd2);border-radius:var(--rs);background:transparent;color:var(--mu);font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-ghost:hover{background:var(--sf2);color:var(--tx);}
+.btn-gold{padding:7px 18px;border:none;border-radius:var(--rs);background:var(--gold);color:#0f0f10;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
+.btn-gold:hover{background:#b8943e;}
+.land-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 64px;}
+.land-badge{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);padding:5px 14px;border-radius:20px;margin-bottom:28px;}
+.land-h1{font-size:48px;font-weight:600;letter-spacing:-1px;line-height:1.15;margin-bottom:20px;max-width:700px;}
+.land-h1 span{color:var(--gold);}
+.land-sub{font-size:17px;color:var(--mu);max-width:520px;line-height:1.7;margin-bottom:40px;}
+.land-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary-lg{padding:13px 32px;background:var(--ac);border:none;border-radius:var(--rs);color:white;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;}
+.btn-primary-lg:hover{background:var(--ac2);}
+.btn-ghost-lg{padding:13px 32px;background:transparent;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--mu);font-size:15px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-ghost-lg:hover{background:var(--sf2);color:var(--tx);}
+.land-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 48px 80px;max-width:1100px;margin:0 auto;width:100%;}
+.feat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px 22px;}
+.feat-ic{font-size:24px;margin-bottom:14px;}
+.feat-t{font-size:14px;font-weight:600;margin-bottom:8px;}
+.feat-d{font-size:13px;color:var(--mu);line-height:1.7;}
+.land-how{padding:64px 48px;max-width:1100px;margin:0 auto;width:100%;}
+.section-eyebrow{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:10px;}
+.section-h2{font-size:28px;font-weight:600;letter-spacing:-.5px;margin-bottom:40px;}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.step{display:flex;flex-direction:column;gap:10px;}
+.step-n{width:32px;height:32px;border-radius:50%;background:rgba(108,142,191,.15);color:var(--ac);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;border:1px solid rgba(108,142,191,.3);}
+.step-t{font-size:13px;font-weight:600;}
+.step-d{font-size:12px;color:var(--mu);line-height:1.7;}
+.land-footer{padding:24px 48px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.lf-logo{font-size:13px;font-weight:500;color:var(--mu);}
+.lf-logo span{color:var(--gold);}
+.lf-credit{font-size:11px;color:var(--su);}
+.lf-credit span{color:var(--gold);}
+hr.land-hr{border:none;border-top:1px solid var(--bd);margin:0 48px;}
+
+/* ── AUTH ── */
+#s-auth{align-items:center;justify-content:center;}
+.auth-card{width:400px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:40px 36px;position:relative;}
+.auth-back{position:absolute;top:16px;left:16px;background:transparent;border:none;color:var(--mu);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:var(--rs);transition:all .15s;}
+.auth-back:hover{background:var(--sf2);color:var(--tx);}
+.auth-logo{font-size:22px;font-weight:600;margin-bottom:6px;letter-spacing:-.4px;}
+.auth-logo span{color:var(--gold);}
+.auth-tagline{font-size:13px;color:var(--mu);margin-bottom:28px;}
+.auth-tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:22px;}
+.auth-tab{padding:8px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .15s;}
+.auth-tab.active{color:var(--tx);border-bottom-color:var(--gold);font-weight:500;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--mu);margin-bottom:6px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;}
+.field input,.field select{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;font-size:14px;color:var(--tx);font-family:inherit;outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus{border-color:var(--ac);}
+.field select option{background:var(--sf2);}
+.btn-primary{width:100%;padding:11px;background:var(--ac);border:none;border-radius:var(--rs);color:white;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;margin-top:4px;}
+.btn-primary:hover{background:var(--ac2);}
+.auth-msg{font-size:12px;margin-top:12px;padding:10px 12px;border-radius:var(--rs);display:none;}
+.auth-msg.error{background:var(--rd-bg);color:#f87171;display:block;}
+.auth-msg.success{background:var(--gr-bg);color:#6ee7b7;display:block;}
+
+/* ── MAIN APP ── */
+#s-app{overflow:hidden;}
+.topbar{height:48px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
+.tb-logo{font-size:15px;font-weight:600;letter-spacing:-.3px;white-space:nowrap;}
+.tb-logo span{color:var(--gold);}
+.tb-div{width:1px;height:18px;background:var(--bd);flex-shrink:0;}
+.tb-user{font-size:12px;color:var(--mu);}
+.tb-r{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.role-pill{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.rp-student{background:var(--gr-bg);color:var(--gr);}
+.rp-teacher{background:var(--am-bg);color:var(--am);}
+.sim-pill{font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);font-weight:500;}
+.lang-btn{display:flex;background:var(--sf2);border-radius:var(--rs);border:1px solid var(--bd);overflow:hidden;}
+.lang-opt{padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:inherit;transition:all .15s;}
+.lang-opt.active{background:var(--gold);color:#0f0f10;}
+.icon-btn{width:30px;height:30px;border-radius:var(--rs);background:transparent;border:1px solid var(--bd);color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.icon-btn:hover{background:var(--sf2);color:var(--tx);}
+
+/* ── BODY LAYOUT ── */
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:230px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
+.sec-lbl{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--su);padding:14px 14px 6px;}
+.mod-btn{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border:none;background:transparent;color:var(--mu);font-size:13px;font-family:inherit;text-align:left;width:100%;border-left:2px solid transparent;transition:all .1s;}
+.mod-btn:hover{background:var(--sf2);color:var(--tx);}
+.mod-btn.active{background:var(--sf2);color:var(--tx);border-left-color:var(--gold);font-weight:500;}
+.mod-btn.locked{opacity:.35;cursor:not-allowed;}
+.sb-hr{height:1px;background:var(--bd);margin:6px 0;}
+.new-chat-btn{margin:6px 10px;padding:8px 12px;background:var(--sf2);border:1px dashed var(--bd2);border-radius:var(--rs);color:var(--mu);font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s;width:calc(100% - 20px);}
+.new-chat-btn:hover{background:var(--sf3);color:var(--tx);}
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;border-left:2px solid transparent;transition:background .1s;}
+.conv-item:hover{background:var(--sf2);}
+.conv-item.active{background:var(--sf2);border-left-color:var(--ac);}
+.conv-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.conv-ttl{font-size:12px;color:var(--mu);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.conv-time{font-size:10px;color:var(--su);flex-shrink:0;}
+.conv-del{opacity:0;font-size:11px;color:var(--su);background:none;border:none;cursor:pointer;padding:0 2px;flex-shrink:0;}
+.conv-item:hover .conv-del{opacity:1;}
+
+/* ── CHAT AREA ── */
+.chat-area{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+.chat-hdr{padding:12px 20px;border-bottom:1px solid var(--bd);background:var(--sf);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.ch-info{flex:1;}
+.ch-title{font-size:14px;font-weight:500;}
+.ch-sub{font-size:11px;color:var(--mu);margin-top:2px;}
+.soc-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--gr-bg);color:var(--gr);font-weight:500;white-space:nowrap;}
+.notice-bar{padding:7px 20px;background:rgba(108,142,191,.07);border-bottom:1px solid rgba(108,142,191,.13);font-size:11px;color:var(--ac);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.messages{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:16px;}
+.messages::-webkit-scrollbar{width:4px;}
+.messages::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px;}
+.empty-st{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--su);}
+.empty-ic{font-size:32px;opacity:.4;}
+.empty-t{font-size:15px;color:var(--mu);font-weight:500;}
+.empty-s{font-size:12px;text-align:center;max-width:240px;line-height:1.7;}
+.msg-row{display:flex;gap:12px;max-width:760px;}
+.msg-row.user{align-self:flex-end;flex-direction:row-reverse;max-width:640px;}
+.av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-top:2px;}
+.av-ai{background:var(--ac2);color:white;}
+.av-me{background:var(--sf3);color:var(--mu);border:1px solid var(--bd);}
+.bbl{padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.65;max-width:100%;}
+.bbl-ai{background:var(--sf);border:1px solid var(--bd);border-radius:4px 12px 12px 12px;}
+.bbl-user{background:var(--ac2);color:white;border-radius:12px 4px 12px 12px;}
+/* File attachment in bubble */
+.attach-preview{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12px;}
+.attach-icon{font-size:18px;flex-shrink:0;}
+.attach-name{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:rgba(255,255,255,.9);}
+/* Image in bubble */
+.msg-img{max-width:260px;border-radius:8px;display:block;margin-bottom:4px;cursor:pointer;}
+.typing-row{display:flex;gap:12px;}
+.typing-dots{padding:12px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:4px 12px 12px 12px;display:flex;gap:5px;align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--su);animation:pulse 1.4s infinite;}
+.dot:nth-child(2){animation-delay:.2s;}.dot:nth-child(3){animation-delay:.4s;}
+@keyframes pulse{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+/* ── INPUT BAR ── */
+.input-bar{padding:14px 20px;border-top:1px solid var(--bd);background:var(--sf);flex-shrink:0;}
+.attach-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.chip{display:flex;align-items:center;gap:5px;background:var(--sf3);border:1px solid var(--bd2);border-radius:20px;padding:3px 10px 3px 8px;font-size:11px;color:var(--mu);}
+.chip-remove{background:none;border:none;color:var(--su);cursor:pointer;font-size:12px;padding:0;line-height:1;}
+.input-row{display:flex;gap:10px;align-items:flex-end;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--r);padding:10px 10px 10px 16px;transition:border-color .15s;}
+.input-row:focus-within{border-color:var(--ac);}
+.chat-input{flex:1;border:none;background:transparent;font-size:14px;color:var(--tx);font-family:inherit;resize:none;outline:none;min-height:22px;max-height:120px;line-height:1.5;}
+.chat-input::placeholder{color:var(--su);}
+.input-actions{display:flex;gap:6px;align-items:flex-end;flex-shrink:0;}
+.upload-btn{width:32px;height:32px;border-radius:var(--rs);background:transparent;border:1px solid var(--bd2);color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.upload-btn:hover{background:var(--sf3);color:var(--tx);}
+.send-btn{width:34px;height:34px;border-radius:var(--rs);background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
+.send-btn:hover{background:var(--ac2);}
+.send-btn:disabled{background:var(--sf3);cursor:not-allowed;}
+.send-btn svg{stroke:white;}
+.send-btn:disabled svg{stroke:var(--su);}
+.input-hint{font-size:11px;color:var(--su);margin-top:6px;padding:0 4px;}
+input[type="file"]{display:none;}
+
+/* ── APP FOOTER ── */
+.app-footer{height:32px;background:var(--sf);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.footer-txt{font-size:11px;color:var(--su);}
+.footer-txt span{color:var(--gold);}
+
+/* ── TEACHER PANEL ── */
+.teacher-area{flex:1;overflow-y:auto;padding:24px;background:var(--bg);}
+.t-tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:22px;}
+.t-tab{padding:9px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .15s;}
+.t-tab.active{color:var(--tx);border-bottom-color:var(--gold);font-weight:500;}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 18px;}
+.stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:8px;font-weight:500;}
+.stat-val{font-size:26px;font-weight:600;letter-spacing:-.5px;}
+.stat-sub{font-size:11px;color:var(--su);margin-top:3px;}
+.insight-box{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--gold);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;}
+.insight-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);font-weight:600;margin-bottom:8px;}
+.insight-txt{font-size:13px;color:var(--mu);line-height:1.7;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.panel-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;}
+.panel-ttl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);font-weight:600;margin-bottom:14px;}
+.weak-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--mu);}
+.weak-row:last-child{border-bottom:none;}
+.wbar{flex:1;height:4px;background:var(--sf3);border-radius:4px;overflow:hidden;}
+.wfill{height:100%;border-radius:4px;}
+.wpct{font-size:11px;color:var(--su);min-width:90px;text-align:right;}
+.stu-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--rs);cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s;}
+.stu-row:hover{background:var(--sf2);}
+.stu-row:last-child{border-bottom:none;}
+.s-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.s-name{font-size:13px;font-weight:500;}
+.s-meta{font-size:11px;color:var(--mu);margin-top:1px;}
+.rbadge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.r-red{background:var(--rd-bg);color:#f87171;}
+.r-amber{background:var(--am-bg);color:#fbbf24;}
+.r-green{background:var(--gr-bg);color:#6ee7b7;}
+.conv-log{display:none;background:var(--sf2);border-radius:var(--rs);padding:12px 14px;margin:4px 10px 10px;font-size:12px;line-height:1.9;border-left:2px solid var(--bd2);}
+.conv-log.open{display:block;}
+.log-ai{color:var(--gr);}
+.log-stu{color:var(--tx);}
+.mod-cfg-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:13px;color:var(--mu);}
+.mod-cfg-row:last-child{border-bottom:none;}
+.toggle{width:36px;height:20px;border-radius:10px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--gr);}
+.toggle.off{background:var(--sf3);border:1px solid var(--bd2);}
+.toggle-k{position:absolute;top:2px;width:16px;height:16px;background:white;border-radius:50%;transition:left .2s;}
+.toggle.on .toggle-k{left:18px;}
+.toggle.off .toggle-k{left:2px;}
+.act-btn{font-size:11px;padding:4px 12px;border:1px solid var(--bd2);border-radius:var(--rs);background:transparent;cursor:pointer;color:var(--mu);font-family:inherit;transition:all .15s;}
+.act-btn:hover{background:var(--sf2);color:var(--tx);}
+/* class/flags rows */
+.class-row{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--bd);font-size:13px;border-radius:var(--rs);transition:background .1s;}
+.class-row:last-child{border-bottom:none;}
+.class-row:hover{background:var(--sf2);}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cd-on{background:var(--gr);}
+.cd-off{background:var(--su);}
+.code-row{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--bd);font-size:12px;}
+.code-row:last-child{border-bottom:none;}
+.code-val{font-family:monospace;font-size:13px;font-weight:600;color:var(--gold);flex:1;}
+.code-used{opacity:.4;text-decoration:line-through;}
+.flag-row{display:flex;align-items:flex-start;gap:12px;padding:10px 8px;border-bottom:1px solid var(--bd);border-radius:var(--rs);transition:background .1s;cursor:pointer;}
+.flag-row:hover{background:var(--sf2);}
+.flag-row:last-child{border-bottom:none;}
+.flag-row.reviewed{opacity:.45;}
+.flag-type{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.ft-profanity{background:var(--rd-bg);color:#f87171;}
+.ft-discrimination{background:#3d1a3d;color:#e879f9;}
+.ft-inappropriate{background:var(--am-bg);color:#fbbf24;}
+.ft-self_harm{background:#1a1a3d;color:#818cf8;}
+.flag-body{flex:1;}
+.flag-msg{font-size:13px;color:var(--tx);margin-bottom:4px;line-height:1.5;}
+.flag-meta{font-size:11px;color:var(--mu);}
+.flag-ck{font-size:11px;color:var(--gr);flex-shrink:0;margin-top:2px;}
+/* simulate banner */
+.sim-banner{background:rgba(201,168,76,.08);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 20px;font-size:11px;color:var(--gold);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.sim-exit{margin-left:auto;font-size:11px;padding:3px 10px;border:1px solid rgba(201,168,76,.3);border-radius:20px;background:transparent;color:var(--gold);cursor:pointer;font-family:inherit;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px;}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px 16px;font-size:13px;opacity:0;transform:translateY(8px);transition:all .2s;z-index:200;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LANDING ══════════════ -->
+<div id="s-landing" class="screen active">
+  <nav class="land-nav">
+    <div class="land-logo">Marc's <span>AI</span> Tutor</div>
+    <div class="land-nav-r">
+      <div class="lang-btn">
+        <button class="lang-opt active" onclick="setLang('en')">EN</button>
+        <button class="lang-opt" onclick="setLang('zh')">中文</button>
+      </div>
+      <button class="btn-ghost" onclick="goAuth('login')" data-i="tab_login">Sign in</button>
+      <button class="btn-gold" onclick="goAuth('register')" data-i="tab_register">Register</button>
+    </div>
+  </nav>
+  <div class="land-hero">
+    <div class="land-badge" data-i="land_badge">AI-Powered Adaptive Learning</div>
+    <div class="land-h1">Learn to <span>think</span>,<br>not just memorise.</div>
+    <div class="land-sub" data-i="land_sub">An AI tutor that guides students through Socratic questioning — asking the right questions so they discover answers themselves.</div>
+    <div class="land-ctas">
+      <button class="btn-primary-lg" onclick="goAuth('register')" data-i="land_cta_start">Get started free</button>
+      <button class="btn-ghost-lg" onclick="goAuth('login')" data-i="land_cta_signin">Sign in</button>
+    </div>
+  </div>
+  <div class="land-feats">
+    <div class="feat"><div class="feat-ic">🧠</div><div class="feat-t" data-i="feat1_t">Socratic tutoring</div><div class="feat-d" data-i="feat1_d">The AI never gives direct answers — only guiding questions that help students discover solutions themselves.</div></div>
+    <div class="feat"><div class="feat-ic">✏️</div><div class="feat-t" data-i="feat2_t">Essay feedback</div><div class="feat-d" data-i="feat2_d">Students receive targeted questions that help them identify and fix weaknesses in their own writing.</div></div>
+    <div class="feat"><div class="feat-ic">📎</div><div class="feat-t" data-i="feat3_t">File & image upload</div><div class="feat-d" data-i="feat3_d">Upload Word, PDF, Excel files or photos. The AI reads and discusses them with students using Socratic guidance.</div></div>
+    <div class="feat"><div class="feat-ic">👩‍🏫</div><div class="feat-t" data-i="feat4_t">Teacher dashboard</div><div class="feat-d" data-i="feat4_d">See every conversation, manage classes, generate invite codes, and test modules before releasing them to students.</div></div>
+    <div class="feat"><div class="feat-ic">🔒</div><div class="feat-t" data-i="feat5_t">Anti-plagiarism & moderation</div><div class="feat-d" data-i="feat5_d">Two-layer plagiarism detection plus automatic content flagging for profanity, discrimination, and self-harm.</div></div>
+    <div class="feat"><div class="feat-ic">🌐</div><div class="feat-t" data-i="feat6_t">Bilingual — EN & 中文</div><div class="feat-d" data-i="feat6_d">Full interface in English and Simplified Chinese. The AI responds in whichever language the student uses.</div></div>
+  </div>
+  <hr class="land-hr">
+  <div class="land-how">
+    <div class="section-eyebrow" data-i="how_lbl">How it works</div>
+    <div class="section-h2" data-i="how_h2">Four steps to deeper learning</div>
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div class="step-t" data-i="s1t">Student asks a question</div><div class="step-d" data-i="s1d">Choose a module and type or upload your question.</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t" data-i="s2t">AI responds with a question</div><div class="step-d" data-i="s2d">Instead of answering, the AI asks a guiding question.</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t" data-i="s3t">Student thinks it through</div><div class="step-d" data-i="s3d">The dialogue continues until the student finds the answer.</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-t" data-i="s4t">Teacher reviews</div><div class="step-d" data-i="s4d">All conversations are saved and analysed in the teacher dashboard.</div></div>
+    </div>
+  </div>
+  <div class="land-footer">
+    <div class="lf-logo">Marc's <span>AI</span> Tutor</div>
+    <div class="lf-credit">Designed by <span>Marc</span></div>
+  </div>
+</div>
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div id="s-auth" class="screen">
+  <div class="auth-card">
+    <button class="auth-back" onclick="goScreen('s-landing')">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2L4 6l4 4"/></svg>
+      <span data-i="back">Back</span>
+    </button>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <div class="lang-btn">
+        <button class="lang-opt active" onclick="setLang('en')">EN</button>
+        <button class="lang-opt" onclick="setLang('zh')">中文</button>
+      </div>
+    </div>
+    <div class="auth-logo">Marc's <span>AI</span> Tutor</div>
+    <div class="auth-tagline" data-i="auth_sub">Guided learning, not just answers.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')" data-i="tab_login">Sign in</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')" data-i="tab_register">Register</button>
+    </div>
+    <div id="login-form">
+      <div class="field"><label data-i="f_email">Email</label><input type="email" id="login-email" placeholder="you@school.edu"></div>
+      <div class="field"><label data-i="f_password">Password</label><input type="password" id="login-pass"></div>
+      <button class="btn-primary" onclick="doLogin()" data-i="btn_signin">Sign in</button>
+    </div>
+    <div id="register-form" style="display:none;">
+      <!-- Step 1: choose role -->
+      <div id="reg-step1">
+        <div style="font-size:12px;color:var(--mu);margin-bottom:14px;" data-i="choose_role_hint">Choose your role to get started:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div id="role-card-student" onclick="chooseRole('student')" style="border:2px solid var(--bd2);border-radius:var(--r);padding:18px 14px;text-align:center;cursor:pointer;transition:all .15s;">
+            <div style="font-size:28px;margin-bottom:8px;">👨‍🎓</div>
+            <div style="font-size:14px;font-weight:600;" data-i="role_student">Student</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:4px;" data-i="role_student_desc">I want to learn</div>
+          </div>
+          <div id="role-card-teacher" onclick="chooseRole('teacher')" style="border:2px solid var(--bd2);border-radius:var(--r);padding:18px 14px;text-align:center;cursor:pointer;transition:all .15s;">
+            <div style="font-size:28px;margin-bottom:8px;">👩‍🏫</div>
+            <div style="font-size:14px;font-weight:600;" data-i="role_teacher">Teacher</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:4px;" data-i="role_teacher_desc">I manage classes</div>
+          </div>
+        </div>
+      </div>
+      <!-- Step 2: fill details -->
+      <div id="reg-step2" style="display:none;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <button onclick="backToStep1()" style="background:transparent;border:none;color:var(--mu);cursor:pointer;font-size:18px;line-height:1;padding:0;">←</button>
+          <span id="reg-role-display" style="font-size:13px;font-weight:500;"></span>
+        </div>
+        <div class="field"><label data-i="f_name">Full name</label><input type="text" id="reg-name"></div>
+        <div class="field"><label data-i="f_email">Email</label><input type="email" id="reg-email" placeholder="you@school.edu"></div>
+        <div class="field"><label data-i="f_password">Password</label><input type="password" id="reg-pass"></div>
+        <div class="field">
+          <label data-i="f_invite">Invite code</label>
+          <input type="password" id="reg-invite" autocomplete="off" oninput="onInviteInput()" data-i-placeholder="invite_placeholder">
+          <div id="invite-hint" style="font-size:11px;margin-top:5px;color:var(--mu);"></div>
+        </div>
+        <div class="field" id="class-field" style="display:none;">
+          <label data-i="f_class">Class</label>
+          <div id="class-display" style="background:var(--sf3);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--gr);">—</div>
+        </div>
+        <button class="btn-primary" onclick="doRegister()" data-i="btn_register">Create account</button>
+      </div>
+    </div>
+    <div id="auth-msg" class="auth-msg"></div>
+  </div>
+</div>
+
+<!-- ══════════════ STUDENT: CLASS SELECTION ══════════════ -->
+<div id="s-class-select" class="screen" style="align-items:center;justify-content:center;background:var(--bg);">
+  <div style="width:480px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:40px 36px;">
+    <div style="font-size:22px;font-weight:600;margin-bottom:6px;letter-spacing:-.4px;">Marc's <span style="color:var(--gold);">AI</span> Tutor</div>
+    <div style="font-size:13px;color:var(--mu);margin-bottom:28px;" data-i="select_class_sub">Welcome! Please select your class to continue.</div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:12px;" data-i="select_class_lbl">Select your class</div>
+    <div id="class-select-list" style="max-height:320px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--r);"></div>
+    <div id="class-select-msg" style="font-size:12px;color:#f87171;margin-top:10px;display:none;"></div>
+    <button class="btn-primary" onclick="confirmClassSelection()" style="margin-top:16px;" data-i="btn_confirm_class">Confirm &amp; enter</button>
+    <button onclick="doSignOut()" style="width:100%;margin-top:10px;padding:8px;background:transparent;border:none;color:var(--mu);font-size:12px;cursor:pointer;font-family:inherit;" data-i="btn_signout_class">Sign out</button>
+  </div>
+</div>
+
+<!-- ══════════════ TEACHER: ONBOARDING ══════════════ -->
+<div id="s-teacher-onboard" class="screen" style="align-items:center;justify-content:center;background:var(--bg);">
+  <div style="width:560px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:40px 36px;">
+    <div style="font-size:22px;font-weight:600;margin-bottom:6px;letter-spacing:-.4px;">Marc's <span style="color:var(--gold);">AI</span> Tutor</div>
+    <div style="font-size:13px;color:var(--mu);margin-bottom:28px;" data-i="teacher_onboard_sub">Set up your classes before you begin.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+      <div onclick="showOnboardPanel('create')" id="ob-card-create" style="border:2px solid var(--bd2);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .15s;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">➕</div>
+        <div style="font-size:14px;font-weight:600;" data-i="ob_create">Create a class</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:4px;" data-i="ob_create_desc">Start a new class from scratch</div>
+      </div>
+      <div onclick="showOnboardPanel('link')" id="ob-card-link" style="border:2px solid var(--bd2);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .15s;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">🔗</div>
+        <div style="font-size:14px;font-weight:600;" data-i="ob_link">Link a class</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:4px;" data-i="ob_link_desc">Join an existing class</div>
+      </div>
+    </div>
+
+    <!-- CREATE PANEL -->
+    <div id="ob-panel-create" style="display:none;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:12px;" data-i="create_class">Create new class</div>
+      <div class="field">
+        <label data-i="class_grade">Grade / Year</label>
+        <input type="text" id="ob-grade" placeholder="e.g. Grade 10 / Year 8 / 高一">
+      </div>
+      <div class="field">
+        <label data-i="class_name">Class name</label>
+        <input type="text" id="ob-class-name" placeholder="e.g. Math A / English B">
+      </div>
+      <div class="field">
+        <label data-i="class_desc">Description (optional)</label>
+        <input type="text" id="ob-class-desc">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn-primary" style="flex:1;" onclick="onboardCreateClass()" data-i="btn_create">Create &amp; enter</button>
+        <button class="act-btn" onclick="hideOnboardPanel()" data-i="btn_cancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- LINK PANEL -->
+    <div id="ob-panel-link" style="display:none;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:12px;" data-i="all_classes">All classes — select to link</div>
+      <div id="ob-all-classes" style="max-height:260px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--r);margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" style="flex:1;" onclick="onboardLinkClass()" data-i="btn_link_enter">Link &amp; enter</button>
+        <button class="act-btn" onclick="hideOnboardPanel()" data-i="btn_cancel">Cancel</button>
+      </div>
+    </div>
+
+    <div id="ob-msg" style="font-size:12px;color:#f87171;margin-top:10px;display:none;"></div>
+    <button onclick="enterDashboardAnyway()" style="width:100%;margin-top:16px;padding:8px;background:transparent;border:none;color:var(--mu);font-size:12px;cursor:pointer;font-family:inherit;" data-i="btn_skip_onboard">Skip for now — enter dashboard</button>
+    <button onclick="doSignOut()" style="width:100%;margin-top:4px;padding:6px;background:transparent;border:none;color:var(--su);font-size:11px;cursor:pointer;font-family:inherit;" data-i="btn_signout_class">Sign out</button>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="s-app" class="screen">
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="tb-logo">Marc's <span>AI</span> Tutor</div>
+    <div class="tb-div"></div>
+    <div class="tb-user" id="tb-user"></div>
+    <div class="tb-r">
+      <span class="role-pill" id="role-badge"></span>
+      <span class="sim-pill" id="sim-badge" style="display:none;" data-i="sim_label">Simulation mode</span>
+      <div class="lang-btn">
+        <button class="lang-opt active" onclick="setLang('en')">EN</button>
+        <button class="lang-opt" onclick="setLang('zh')">中文</button>
+      </div>
+      <button class="icon-btn" onclick="doSignOut()" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 2H2v10h3M9 10l3-3-3-3M12 7H5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- simulation banner (teacher testing) -->
+  <div id="sim-banner" class="sim-banner" style="display:none;">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="6"/><path d="M7 4v4M7 9.5v.3" stroke-linecap="round"/></svg>
+    <span data-i="sim_banner_txt">You are previewing this module as a student. Conversations are not saved.</span>
+    <button class="sim-exit" onclick="exitSimulation()" data-i="sim_exit">Exit preview</button>
+  </div>
+
+  <div class="app-body">
+    <!-- SIDEBAR (student + teacher sim) -->
+    <div class="sidebar" id="sidebar">
+      <div class="sec-lbl" data-i="lbl_modules">Modules</div>
+      <button class="mod-btn active" data-module="tutoring" onclick="selectModule(this)"><span style="font-size:15px">📘</span><span data-i="mod_tutoring">Subject tutoring</span></button>
+      <button class="mod-btn" data-module="essay" onclick="selectModule(this)"><span style="font-size:15px">✏️</span><span data-i="mod_essay">Essay feedback</span></button>
+      <button class="mod-btn" data-module="discussion" onclick="selectModule(this)"><span style="font-size:15px">🔍</span><span data-i="mod_discussion">Topic discussion</span></button>
+      <button class="mod-btn" data-module="data" onclick="selectModule(this)"><span style="font-size:15px">📊</span><span data-i="mod_data">Data research</span></button>
+      <button class="mod-btn locked" data-module="extension"><span style="font-size:15px">🧩</span><span data-i="mod_extension">Extension tasks</span><span style="margin-left:auto;font-size:11px;">🔒</span></button>
+      <div class="sb-hr"></div>
+      <div class="sec-lbl" data-i="lbl_conversations">Conversations</div>
+      <button class="new-chat-btn" onclick="newConversation()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 1v10M1 6h10"/></svg>
+        <span data-i="btn_new_chat">New conversation</span>
+      </button>
+      <div class="conv-list" id="conv-list"></div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area" id="chat-area">
+      <div class="empty-st" id="empty-st">
+        <div class="empty-ic">💬</div>
+        <div class="empty-t" data-i="empty_title">Start a conversation</div>
+        <div class="empty-s" data-i="empty_sub">Select a module then click "New conversation".</div>
+      </div>
+      <div id="active-chat" style="display:none;flex-direction:column;height:100%;">
+        <div class="chat-hdr">
+          <button class="icon-btn" onclick="closeConversation()" title="Back" style="flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 2L5 7l4 5"/></svg>
+          </button>
+          <div class="ch-info">
+            <div class="ch-title" id="ch-title">Subject tutoring</div>
+            <div class="ch-sub" id="ch-sub">Guided questions — no direct answers</div>
+          </div>
+          <span class="soc-badge" data-i="socratic_badge">Socratic mode</span>
+        </div>
+        <div class="notice-bar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><path d="M6 5v3.5M6 3.2v.3"/></svg>
+          <span data-i="notice_recorded">Your conversations are recorded and available for your teacher to review.</span>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="input-bar">
+          <div class="attach-chips" id="attach-chips"></div>
+          <div class="input-row">
+            <textarea class="chat-input" id="chat-input" rows="1" onkeydown="onKey(event)" oninput="autoResize(this)"></textarea>
+            <div class="input-actions">
+              <button class="upload-btn" onclick="document.getElementById('file-input').click()" title="Attach file">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8.5V11a2 2 0 01-2 2H4a2 2 0 01-2-2V8.5M7.5 1v8M4.5 4L7.5 1l3 3"/></svg>
+              </button>
+              <button class="upload-btn" onclick="document.getElementById('camera-input').click()" title="Take photo / upload image">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="13" height="9" rx="1.5"/><circle cx="7.5" cy="8.5" r="2.2"/><path d="M5 4l1-2h3l1 2"/></svg>
+              </button>
+              <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L2 6.5l4.5 1.5L8 13l5-11z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="input-hint" data-i="input_hint">Enter to send · Shift+Enter for new line · 📎 files & 📷 photos supported</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER DASHBOARD -->
+    <div id="teacher-panel" style="display:none;" class="teacher-area">
+      <!-- back to student view button -->
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:18px;font-weight:600;letter-spacing:-.3px;" data-i="teacher_dashboard">Teacher Dashboard</div>
+      </div>
+      <div class="t-tabs">
+        <button class="t-tab active" onclick="tTab(this,'t-ov')" data-i="ttab_overview">Overview</button>
+        <button class="t-tab" onclick="tTab(this,'t-st')" data-i="ttab_students">Students</button>
+        <button class="t-tab" onclick="tTab(this,'t-cl')" data-i="ttab_classes">Classes</button>
+        <button class="t-tab" onclick="tTab(this,'t-fl')" data-i="ttab_flags">Content flags</button>
+        <button class="t-tab" onclick="tTab(this,'t-mo')" data-i="ttab_modules">Modules</button>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div id="t-ov">
+        <div class="stats4">
+          <div class="stat-box"><div class="stat-lbl" data-i="stat_active">Active students</div><div class="stat-val">28</div><div class="stat-sub" data-i="stat_active_sub">of 30 total</div></div>
+          <div class="stat-box"><div class="stat-lbl" data-i="stat_chats">Chats this week</div><div class="stat-val">347</div><div class="stat-sub">+12%</div></div>
+          <div class="stat-box"><div class="stat-lbl" data-i="stat_flags">Flags</div><div class="stat-val" style="color:#f87171">3</div><div class="stat-sub" data-i="stat_flags_sub">Needs review</div></div>
+          <div class="stat-box"><div class="stat-lbl" data-i="stat_engage">Avg engagement</div><div class="stat-val">72%</div><div class="stat-sub" data-i="stat_engage_sub">Good</div></div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-lbl" data-i="insight_lbl">AI Teaching Insight</div>
+          <div class="insight-txt" data-i="insight_txt">This week the class repeatedly revisited calculus. Consider dedicating next lesson to derivatives. Two students attempted to get direct answers multiple times and may benefit from a 1-on-1 session.</div>
+        </div>
+        <div class="two-col">
+          <div class="panel-card">
+            <div class="panel-ttl" data-i="panel_weakspots">Class weak spots</div>
+            <div class="weak-row"><span style="flex:1" data-i="weak1">Calculus / derivatives</span><div class="wbar"><div class="wfill" style="width:78%;background:#ef4444;"></div></div><span class="wpct" data-i="weak1_pct">78% struggling</span></div>
+            <div class="weak-row"><span style="flex:1" data-i="weak2">Classical text translation</span><div class="wbar"><div class="wfill" style="width:62%;background:#f97316;"></div></div><span class="wpct" data-i="weak2_pct">62% struggling</span></div>
+            <div class="weak-row"><span style="flex:1" data-i="weak3">Essay argument structure</span><div class="wbar"><div class="wfill" style="width:45%;background:#f97316;"></div></div><span class="wpct" data-i="weak3_pct">45% struggling</span></div>
+            <div class="weak-row"><span style="flex:1" data-i="weak4">Equation balancing</span><div class="wbar"><div class="wfill" style="width:38%;background:var(--gr);"></div></div><span class="wpct" data-i="weak4_pct">38% struggling</span></div>
+            <div class="weak-row"><span style="flex:1" data-i="weak5">English tense usage</span><div class="wbar"><div class="wfill" style="width:31%;background:var(--gr);"></div></div><span class="wpct" data-i="weak5_pct">31% struggling</span></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-ttl" data-i="panel_usage">Module usage</div>
+            <div style="display:flex;flex-direction:column;gap:13px;margin-top:4px;">
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:5px;"><span data-i="mod_essay">Essay feedback</span><span>38%</span></div><div style="height:4px;background:var(--sf3);border-radius:4px;"><div style="width:38%;height:100%;background:var(--ac);border-radius:4px;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:5px;"><span data-i="mod_tutoring">Subject tutoring</span><span>32%</span></div><div style="height:4px;background:var(--sf3);border-radius:4px;"><div style="width:32%;height:100%;background:#7c66cc;border-radius:4px;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:5px;"><span data-i="mod_discussion">Topic discussion</span><span>18%</span></div><div style="height:4px;background:var(--sf3);border-radius:4px;"><div style="width:18%;height:100%;background:var(--am);border-radius:4px;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:5px;"><span data-i="mod_data">Data research</span><span>12%</span></div><div style="height:4px;background:var(--sf3);border-radius:4px;"><div style="width:12%;height:100%;background:var(--gr);border-radius:4px;"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDENTS -->
+      <div id="t-st" style="display:none;">
+        <div class="panel-card">
+          <div class="panel-ttl" data-i="panel_students">All students — click to view log</div>
+          <div class="stu-row" onclick="toggleLog('log1')"><div class="s-av" style="background:#3d1515;color:#f87171;">WZ</div><div><div class="s-name">Wei Zhang</div><div class="s-meta" data-i="stu1_meta">18 chats today · Subject tutoring</div></div><span class="rbadge r-red" data-i="flag_plagiarism">Plagiarism risk</span></div>
+          <div class="conv-log" id="log1"><div class="log-ai" data-i="log1_1">Tutor: What do you think the first step might be?</div><div class="log-stu" data-i="log1_2">Wei: Just tell me the answer.</div><div class="log-ai" data-i="log1_3">Tutor: If you were the teacher, what concept would this test?</div><div class="log-stu" data-i="log1_4">Wei: Derivatives? But I don't get them...</div><div class="log-ai" data-i="log1_5">Tutor: Good. Can you remember the definition of a derivative?</div></div>
+          <div class="stu-row" onclick="toggleLog('log2')"><div class="s-av" style="background:#3d2a00;color:#fbbf24;">ML</div><div><div class="s-name">Ming Li</div><div class="s-meta" data-i="stu2_meta">14 chats today · Essay feedback</div></div><span class="rbadge r-amber" data-i="flag_monitor">Monitor closely</span></div>
+          <div class="conv-log" id="log2"><div class="log-ai" data-i="log2_1">Tutor: Does paragraph two fully support your thesis?</div><div class="log-stu" data-i="log2_2">Ming: Can you fix it for me?</div><div class="log-ai" data-i="log2_3">Tutor: What question would a sceptical reader have after that paragraph?</div><div class="log-stu" data-i="log2_4">Ming: Maybe... why?</div><div class="log-ai" data-i="log2_5">Tutor: Exactly. Where could you add that answer?</div></div>
+          <div class="stu-row" onclick="toggleLog('log3')"><div class="s-av" style="background:#0f2e1a;color:#6ee7b7;">FF</div><div><div class="s-name">Fang Fang</div><div class="s-meta" data-i="stu3_meta">9 chats today · Topic discussion</div></div><span class="rbadge r-green" data-i="flag_good">Doing well</span></div>
+          <div class="conv-log" id="log3"><div class="log-ai" data-i="log3_1">Tutor: Academic papers, government reports, or international organisations?</div><div class="log-stu" data-i="log3_2">Fang: Academic papers feel more rigorous?</div><div class="log-ai" data-i="log3_3">Tutor: Good instinct. IPCC 2023 shows +1.1°C warming. How does that support your argument?</div><div class="log-stu" data-i="log3_4">Fang: That is exactly what I needed!</div></div>
+        </div>
+      </div>
+
+      <!-- CLASSES -->
+      <div id="t-cl" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <div class="panel-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div class="panel-ttl" style="margin:0;" data-i="linked_classes">Linked classes</div>
+              <button class="act-btn" onclick="showCreateClass()" data-i="btn_create_class">+ Create class</button>
+            </div>
+            <div id="linked-classes-list"><div style="font-size:12px;color:var(--mu);padding:8px 0;" data-i="loading">Loading...</div></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-ttl" data-i="all_classes">All classes — click to link</div>
+            <div id="all-classes-list"><div style="font-size:12px;color:var(--mu);padding:8px 0;" data-i="loading">Loading...</div></div>
+          </div>
+        </div>
+        <div class="panel-card" style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div class="panel-ttl" style="margin:0;" data-i="invite_codes">Invite codes</div>
+            <button class="act-btn" onclick="showGenCode()" data-i="btn_gen_code">Generate code</button>
+          </div>
+          <div id="invite-codes-list"><div style="font-size:12px;color:var(--mu);padding:8px 0;" data-i="loading">Loading...</div></div>
+        </div>
+        <div id="create-class-form" style="display:none;" class="panel-card" style="margin-top:16px;">
+          <div class="panel-ttl" data-i="create_class">Create new class</div>
+          <div class="field" style="margin-bottom:10px;"><label data-i="class_grade">Grade / Year</label><input type="text" id="new-class-grade" placeholder="e.g. Grade 10 / 高一"></div>
+          <div class="field" style="margin-bottom:10px;"><label data-i="class_name">Class name</label><input type="text" id="new-class-name" placeholder="e.g. Math A / English B"></div>
+          <div class="field" style="margin-bottom:12px;"><label data-i="class_desc">Description (optional)</label><input type="text" id="new-class-desc"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" style="width:auto;padding:8px 20px;" onclick="createClass()" data-i="btn_create">Create</button>
+            <button class="act-btn" onclick="document.getElementById('create-class-form').style.display='none'" data-i="btn_cancel">Cancel</button>
+          </div>
+        </div>
+        <div id="gen-code-form" style="display:none;" class="panel-card">
+          <div class="panel-ttl" data-i="gen_invite_code">Generate invite code</div>
+          <div class="field" style="margin-bottom:10px;"><label data-i="f_role">Role</label><select id="gen-code-role" onchange="onGenRoleChange()"><option value="teacher" data-i="role_teacher">Teacher</option><option value="student" data-i="role_student">Student</option></select></div>
+          <div class="field" id="gen-code-class-field" style="margin-bottom:10px;display:none;"><label data-i="f_class">Class</label><select id="gen-code-class-id"></select></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" style="width:auto;padding:8px 20px;" onclick="generateInviteCode()" data-i="btn_generate">Generate</button>
+            <button class="act-btn" onclick="document.getElementById('gen-code-form').style.display='none'" data-i="btn_cancel">Cancel</button>
+          </div>
+          <div id="gen-code-result" style="display:none;margin-top:12px;background:var(--gr-bg);border:1px solid var(--gr);border-radius:var(--rs);padding:12px;font-size:13px;"></div>
+        </div>
+      </div>
+
+      <!-- FLAGS -->
+      <div id="t-fl" style="display:none;">
+        <div class="insight-box" style="margin-bottom:20px;">
+          <div class="insight-lbl" data-i="content_mod">Content moderation</div>
+          <div class="insight-txt" data-i="content_mod_txt">Messages containing profanity, discrimination, self-harm references, or other inappropriate content are automatically flagged. Click any flag to mark as reviewed.</div>
+        </div>
+        <div class="panel-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div class="panel-ttl" style="margin:0;" data-i="flagged_messages">Flagged messages</div>
+            <select id="flag-filter" onchange="loadFlags()" style="font-size:11px;padding:4px 8px;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);color:var(--mu);font-family:inherit;">
+              <option value="all" data-i="filter_all">All</option>
+              <option value="false" data-i="filter_unreviewed">Unreviewed</option>
+              <option value="true" data-i="filter_reviewed">Reviewed</option>
+            </select>
+          </div>
+          <div id="flags-list"><div style="font-size:12px;color:var(--mu);padding:8px 0;" data-i="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- MODULES -->
+      <div id="t-mo" style="display:none;">
+        <div class="insight-box" style="margin-bottom:20px;">
+          <div class="insight-lbl" data-i="mod_config_lbl">Module customisation</div>
+          <div class="insight-txt" data-i="mod_config_txt">Toggle modules for the whole class, write custom prompts to shape AI guidance, or use "Preview as student" to test a module before releasing it to students.</div>
+        </div>
+        <div class="panel-card" style="margin-bottom:16px;">
+          <div class="panel-ttl" data-i="panel_class_mods">Class modules</div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span style="color:var(--tx)">📘 <span data-i="mod_tutoring">Subject tutoring</span></span><span style="font-size:11px;color:var(--su);margin-left:8px;">28</span><button class="act-btn" data-i="btn_custom_prompt" style="margin-right:6px;">Custom prompt</button><button class="act-btn" onclick="simulateModule('tutoring')" data-i="btn_preview">Preview as student</button></div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span style="color:var(--tx)">✏️ <span data-i="mod_essay">Essay feedback</span></span><span style="font-size:11px;color:var(--su);margin-left:8px;">22</span><button class="act-btn" data-i="btn_custom_prompt" style="margin-right:6px;">Custom prompt</button><button class="act-btn" onclick="simulateModule('essay')" data-i="btn_preview">Preview as student</button></div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span style="color:var(--tx)">🔍 <span data-i="mod_discussion">Topic discussion</span></span><span style="font-size:11px;color:var(--su);margin-left:8px;">15</span><button class="act-btn" data-i="btn_custom_prompt" style="margin-right:6px;">Custom prompt</button><button class="act-btn" onclick="simulateModule('discussion')" data-i="btn_preview">Preview as student</button></div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span style="color:var(--tx)">📊 <span data-i="mod_data">Data research</span></span><span style="font-size:11px;color:var(--su);margin-left:8px;">8</span><button class="act-btn" data-i="btn_custom_prompt" style="margin-right:6px;">Custom prompt</button><button class="act-btn" onclick="simulateModule('data')" data-i="btn_preview">Preview as student</button></div>
+          <div class="mod-cfg-row"><div class="toggle off" onclick="flipTog(this)"><div class="toggle-k"></div></div><span>🧩 <span data-i="mod_extension">Extension tasks</span></span><button class="act-btn" data-i="btn_assign" style="margin-left:auto;">Assign students</button></div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-ttl" data-i="panel_anticheat">Anti-plagiarism controls</div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span data-i="ac1">Prompt layer: AI never outputs a direct answer</span></div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span data-i="ac2">Detection: flag students who push for answers 3+ times</span></div>
+          <div class="mod-cfg-row"><div class="toggle on" onclick="flipTog(this)"><div class="toggle-k"></div></div><span data-i="ac3">Auto-alert teacher when flag triggered</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    <div class="footer-txt">Marc's <span>AI</span> Tutor &nbsp;&middot;&nbsp; Designed by <span>Marc</span></div>
+  </div>
+</div>
+
+<!-- hidden file inputs -->
+<input type="file" id="file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" multiple onchange="onFilesSelected(this)">
+<input type="file" id="camera-input" accept="image/*" capture="environment" multiple onchange="onFilesSelected(this)">
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════
+// CONFIG
+// ══════════════════════════════
+const SUPABASE_URL      = 'https://aydeoadbsytyqrcsgzxo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGVvYWRic3l0eXFyY3NnenhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Mjc1ODUsImV4cCI6MjA5MzMwMzU4NX0.NR_QshJ7S2rjEhy6QGgrU7_RQKwJ03t6AD8MUygZEQw';
+const MINIMAX_API_KEY   = 'sk-cp-4HqqfXmiPJ4VkN2K645mENVnjLVE96EM-qQN-soNwi2lR-Bl3BMEf7AKd-yIgSuSzSJ3z2vspKLW08qo-Lt8Tr3-4huwexpQ0NV-PkVZykf5oBWzrrF3XCY';
+
+let sb;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+catch(e) { console.error('Supabase init failed:', e); }
+
+// ══════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════
+const T = {
+en:{
+  auth_sub:'Guided learning, not just answers.',
+  tab_login:'Sign in', tab_register:'Register', back:'Back',
+  f_email:'Email', f_password:'Password', f_name:'Full name',
+  f_role:'Role', f_invite:'Invite code', f_class:'Class',
+  role_student:'Student', role_teacher:'Teacher',
+  btn_signin:'Sign in', btn_register:'Create account',
+  lbl_modules:'Modules', lbl_conversations:'Conversations',
+  mod_tutoring:'Subject tutoring', mod_essay:'Essay feedback',
+  mod_discussion:'Topic discussion', mod_data:'Data research', mod_extension:'Extension tasks',
+  btn_new_chat:'New conversation',
+  empty_title:'Start a conversation', empty_sub:'Select a module then click "New conversation".',
+  socratic_badge:'Socratic mode',
+  notice_recorded:'Your conversations are recorded and available for your teacher to review.',
+  input_hint:'Enter to send · Shift+Enter for new line · 📎 files & 📷 photos supported',
+  teacher_dashboard:'Teacher Dashboard',
+  ttab_overview:'Overview', ttab_students:'Students', ttab_classes:'Classes',
+  ttab_flags:'Content flags', ttab_modules:'Modules',
+  stat_active:'Active students', stat_active_sub:'of 30 total',
+  stat_chats:'Chats this week', stat_flags:'Flags',
+  stat_flags_sub:'Needs review', stat_engage:'Avg engagement', stat_engage_sub:'Good',
+  insight_lbl:'AI Teaching Insight',
+  insight_txt:'This week the class repeatedly revisited calculus. Consider dedicating next lesson to derivatives. Two students attempted to get direct answers multiple times.',
+  panel_weakspots:'Class weak spots', panel_usage:'Module usage',
+  weak1:'Calculus / derivatives', weak1_pct:'78% struggling',
+  weak2:'Classical text translation', weak2_pct:'62% struggling',
+  weak3:'Essay argument structure', weak3_pct:'45% struggling',
+  weak4:'Equation balancing', weak4_pct:'38% struggling',
+  weak5:'English tense usage', weak5_pct:'31% struggling',
+  panel_students:'All students — click to view log',
+  stu1_meta:'18 chats today · Subject tutoring',
+  stu2_meta:'14 chats today · Essay feedback',
+  stu3_meta:'9 chats today · Topic discussion',
+  flag_plagiarism:'Plagiarism risk', flag_monitor:'Monitor closely', flag_good:'Doing well',
+  log1_1:'Tutor: What do you think the first step might be?',
+  log1_2:'Wei: Just tell me the answer.',
+  log1_3:'Tutor: If you were the teacher, what concept would this test?',
+  log1_4:"Wei: Derivatives? But I don't get them...",
+  log1_5:'Tutor: Good. Can you remember the definition of a derivative?',
+  log2_1:"Tutor: Does paragraph two fully support your thesis?",
+  log2_2:'Ming: Can you fix it for me?',
+  log2_3:'Tutor: What question would a sceptical reader have?',
+  log2_4:'Ming: Maybe... why?',
+  log2_5:'Tutor: Exactly. Where could you add that answer?',
+  log3_1:'Tutor: Academic papers, government reports, or international organisations?',
+  log3_2:'Fang: Academic papers feel more rigorous?',
+  log3_3:'Tutor: Good instinct. IPCC 2023 shows +1.1°C warming. How does that support your argument?',
+  log3_4:'Fang: That is exactly what I needed!',
+  linked_classes:'Linked classes', all_classes:'All classes — click to link',
+  invite_codes:'Invite codes', btn_gen_code:'Generate code',
+  btn_create_class:'+ Create class', create_class:'Create new class',
+  class_name:'Class name', class_desc:'Description (optional)',
+  btn_create:'Create', btn_cancel:'Cancel',
+  gen_invite_code:'Generate invite code', btn_generate:'Generate',
+  content_mod:'Content moderation',
+  content_mod_txt:'Messages with profanity, discrimination, self-harm, or inappropriate content are automatically flagged.',
+  flagged_messages:'Flagged messages',
+  filter_all:'All', filter_unreviewed:'Unreviewed', filter_reviewed:'Reviewed',
+  mod_config_lbl:'Module customisation',
+  mod_config_txt:'Toggle modules, write custom prompts, or use "Preview as student" to test before releasing.',
+  panel_class_mods:'Class modules', btn_custom_prompt:'Custom prompt', btn_preview:'Preview as student',
+  btn_assign:'Assign students', panel_anticheat:'Anti-plagiarism controls',
+  ac1:'Prompt layer: AI never outputs a direct answer',
+  ac2:'Detection: flag students who push for answers 3+ times',
+  ac3:'Auto-alert teacher when flag triggered',
+  sim_label:'Simulation mode',
+  sim_banner_txt:'You are previewing this module as a student. Conversations are not saved.',
+  sim_exit:'Exit preview',
+  choose_role_hint:'Choose your role to get started:',
+  role_student_desc:'I want to learn',
+  role_teacher_desc:'I manage classes',
+  invite_wrong_role:'This invite code is for a {role}. Please go back and select the correct role.',
+  invite_invalid:'Invalid or inactive invite code.',
+  invite_teacher:'Teacher code verified.',
+  invite_student:'Student code verified. Class:',
+  land_badge:'AI-Powered Adaptive Learning',
+  land_sub:'An AI tutor that guides students through Socratic questioning.',
+  land_cta_start:'Get started free', land_cta_signin:'Sign in',
+  feat1_t:'Socratic tutoring', feat1_d:'The AI never gives direct answers — only guiding questions.',
+  feat2_t:'Essay feedback', feat2_d:'Questions that help students find and fix their own weaknesses.',
+  feat3_t:'File & image upload', feat3_d:'Upload Word, PDF, Excel, or photos for the AI to discuss.',
+  feat4_t:'Teacher dashboard', feat4_d:'See all conversations, manage classes, test modules first.',
+  feat5_t:'Anti-plagiarism & moderation', feat5_d:'Two-layer plagiarism detection plus automatic content flagging.',
+  feat6_t:'Bilingual — EN & 中文', feat6_d:'Full interface in English and Simplified Chinese.',
+  how_lbl:'How it works', how_h2:'Four steps to deeper learning',
+  s1t:'Student asks a question', s1d:'Choose a module and type or upload your question.',
+  s2t:'AI responds with a question', s2d:'Instead of answering, the AI asks a guiding question.',
+  s3t:'Student thinks it through', s3d:'The dialogue continues until the student finds the answer.',
+  s4t:'Teacher reviews', s4d:'All conversations are saved and analysed in the dashboard.',
+  loading:'Loading...',
+  select_class_sub:'Welcome! Please select your class to continue.',
+  select_class_lbl:'Select your class',
+  btn_confirm_class:'Confirm & enter',
+  btn_signout_class:'Sign out',
+  teacher_onboard_sub:'Set up your classes before you begin.',
+  ob_create:'Create a class', ob_create_desc:'Start a new class from scratch',
+  ob_link:'Link a class', ob_link_desc:'Join an existing class',
+  btn_link_enter:'Link & enter',
+  btn_skip_onboard:'Skip for now — enter dashboard',
+  class_grade:'Grade / Year',
+  invite_placeholder:'Enter your invite code',
+  toast_deleted:'Conversation deleted.',
+  toast_no_conv:'Please start or select a conversation first.',
+  toast_error:'Could not create conversation.',
+  toast_linked:'Class linked.',
+  toast_unlinked:'Class unlinked.',
+  toast_class_created:'Class created and linked.',
+  toast_code_deactivated:'Code deactivated.',
+  greeting:"Hello! I am here to guide you through {module}. I will not give you direct answers, but I will ask questions that help you think things through. What are you working on today?",
+  file_attached:'File attached: ',
+  img_attached:'Image attached.',
+  role_label:'student', role_label_t:'teacher',
+  timeNow:'now', timeM:'m', timeH:'h', timeD:'d',
+},
+zh:{
+  auth_sub:'引导式学习，而不只是给答案。',
+  tab_login:'登录', tab_register:'注册', back:'返回',
+  f_email:'邮箱', f_password:'密码', f_name:'姓名',
+  f_role:'身份', f_invite:'邀请注册码', f_class:'班级',
+  role_student:'学生', role_teacher:'老师',
+  btn_signin:'登录', btn_register:'创建账号',
+  lbl_modules:'学习模块', lbl_conversations:'对话记录',
+  mod_tutoring:'学科辅导', mod_essay:'作文批改',
+  mod_discussion:'话题讨论', mod_data:'数据收集', mod_extension:'拓展练习',
+  btn_new_chat:'新对话',
+  empty_title:'开始对话', empty_sub:'选择模块后点击「新对话」开始学习。',
+  socratic_badge:'苏格拉底模式',
+  notice_recorded:'您的对话内容将被记录，供老师查阅和分析。',
+  input_hint:'Enter 发送 · Shift+Enter 换行 · 支持上传文件📎和拍照📷',
+  teacher_dashboard:'教师后台',
+  ttab_overview:'班级总览', ttab_students:'学生管理', ttab_classes:'班级管理',
+  ttab_flags:'内容审查', ttab_modules:'模块配置',
+  stat_active:'活跃学生', stat_active_sub:'共30人',
+  stat_chats:'本周对话次数', stat_flags:'标记数',
+  stat_flags_sub:'需要审查', stat_engage:'平均参与度', stat_engage_sub:'良好',
+  insight_lbl:'AI 教学建议',
+  insight_txt:'本周全班在「微积分与导数」模块反复追问，建议下周重点复习。两位同学多次尝试直接获取答案，建议安排一对一辅导。',
+  panel_weakspots:'班级薄弱知识点', panel_usage:'模块使用情况',
+  weak1:'微积分 / 导数', weak1_pct:'78% 有困难',
+  weak2:'文言文翻译', weak2_pct:'62% 有困难',
+  weak3:'议论文结构', weak3_pct:'45% 有困难',
+  weak4:'化学方程式配平', weak4_pct:'38% 有困难',
+  weak5:'英语时态运用', weak5_pct:'31% 有困难',
+  panel_students:'学生列表 — 点击查看对话记录',
+  stu1_meta:'今日对话18次 · 学科辅导',
+  stu2_meta:'今日对话14次 · 作文批改',
+  stu3_meta:'今日对话9次 · 话题讨论',
+  flag_plagiarism:'抄袭风险', flag_monitor:'需要关注', flag_good:'学习良好',
+  log1_1:'导师：你觉得这道题的第一步应该从哪里入手？',
+  log1_2:'张伟：你直接告诉我答案吧。',
+  log1_3:'导师：如果你是出题老师，这道题想考察什么概念？',
+  log1_4:'张伟：导数？但我不会……',
+  log1_5:'导师：很好！你能用自己的话说说导数的定义吗？',
+  log2_1:'导师：你的论点很清晰——第二段的论据能充分支撑它吗？',
+  log2_2:'李明：你帮我改一下吧。',
+  log2_3:'导师：读者看完第二段，会有什么疑问？',
+  log2_4:'李明：可能会问……为什么？',
+  log2_5:'导师：对！那应该在哪里补充这个"为什么"？',
+  log3_1:'导师：你想找学术论文、政府报告还是国际组织数据？',
+  log3_2:'王芳：学术论文应该更权威？',
+  log3_3:'导师：很好！IPCC 2023年报告（ipcc.ch）显示气温已上升1.1°C。这对你的论点有什么支撑？',
+  log3_4:'王芳：这正是我需要的数据！',
+  linked_classes:'已关联班级', all_classes:'所有班级 — 点击关联',
+  invite_codes:'邀请码', btn_gen_code:'生成邀请码',
+  btn_create_class:'+ 创建班级', create_class:'创建新班级',
+  class_name:'班级名称', class_desc:'描述（可选）',
+  btn_create:'创建', btn_cancel:'取消',
+  gen_invite_code:'生成邀请码', btn_generate:'生成',
+  content_mod:'内容审查',
+  content_mod_txt:'包含脏话、歧视、自伤或不当内容的消息会自动标记，点击可标记为已审查。',
+  flagged_messages:'被标记的消息',
+  filter_all:'全部', filter_unreviewed:'未审查', filter_reviewed:'已审查',
+  mod_config_lbl:'模块定制说明',
+  mod_config_txt:'可以为全班开关模块、编写定制提示词，或使用「学生预览」测试效果后再发布给学生。',
+  panel_class_mods:'全班模块开关', btn_custom_prompt:'定制提示词', btn_preview:'学生预览',
+  btn_assign:'指定学生', panel_anticheat:'防抄袭设置',
+  ac1:'Prompt层：AI永远不直接输出答案',
+  ac2:'检测层：标记连续追问答案超过3次的学生',
+  ac3:'触发标记时自动通知老师',
+  sim_label:'模拟模式',
+  sim_banner_txt:'您正在以学生身份预览此模块，对话不会被保存。',
+  sim_exit:'退出预览',
+  choose_role_hint:'请选择您的身份开始注册：',
+  role_student_desc:'我要来学习',
+  role_teacher_desc:'我管理班级',
+  invite_wrong_role:'这个邀请码是给{role}的，请返回选择正确的身份。',
+  invite_invalid:'邀请码无效或已失效。',
+  invite_teacher:'教师邀请码验证成功。',
+  invite_student:'学生邀请码验证成功。班级：',
+  land_badge:'AI 自适应学习平台',
+  land_sub:'用苏格拉底式提问引导学生自己找到答案的AI导师。',
+  land_cta_start:'免费开始使用', land_cta_signin:'登录',
+  feat1_t:'苏格拉底式辅导', feat1_d:'AI永远不直接给答案，只提引导性问题。',
+  feat2_t:'作文批改', feat2_d:'通过提问帮助学生自己发现和改进写作问题。',
+  feat3_t:'文件和图片上传', feat3_d:'支持上传Word、PDF、Excel或拍照，AI进行苏格拉底式讨论。',
+  feat4_t:'教师后台', feat4_d:'查看所有对话、管理班级、先测试模块再发布。',
+  feat5_t:'防抄袭与内容审查', feat5_d:'双层防抄袭机制，自动标记不当内容。',
+  feat6_t:'中英双语', feat6_d:'全界面支持中英文即时切换。',
+  how_lbl:'工作原理', how_h2:'四步实现深度学习',
+  s1t:'学生提出问题', s1d:'选择模块，输入或上传问题。',
+  s2t:'AI用问题回应', s2d:'AI不直接回答，而是提出引导性问题。',
+  s3t:'学生自己思考', s3d:'对话持续，直到学生自己得出答案。',
+  s4t:'老师查看与分析', s4d:'所有对话被保存，在教师后台分析展示。',
+  loading:'加载中...',
+  select_class_sub:'欢迎！请选择您的班级后继续。',
+  select_class_lbl:'选择您的班级',
+  btn_confirm_class:'确认并进入',
+  btn_signout_class:'退出登录',
+  teacher_onboard_sub:'请先设置您的班级。',
+  ob_create:'创建班级', ob_create_desc:'从头创建一个新班级',
+  ob_link:'关联班级', ob_link_desc:'加入已有的班级',
+  btn_link_enter:'关联并进入',
+  btn_skip_onboard:'跳过，直接进入后台',
+  class_grade:'年级',
+  invite_placeholder:'请输入邀请码',
+  toast_deleted:'对话已删除。',
+  toast_no_conv:'请先选择或新建一个对话。',
+  toast_error:'无法创建对话，请稍后再试。',
+  toast_linked:'班级已关联。',
+  toast_unlinked:'班级已取消关联。',
+  toast_class_created:'班级已创建并关联。',
+  toast_code_deactivated:'邀请码已停用。',
+  greeting:'你好！现在进入【{module}】模式。我不会直接给你答案，而是通过提问帮你自己思考出来。你今天在学什么？',
+  file_attached:'已附加文件：',
+  img_attached:'已附加图片。',
+  role_label:'学生', role_label_t:'老师',
+  timeNow:'刚刚', timeM:'分钟前', timeH:'小时前', timeD:'天前',
+}};
+
+// ══════════════════════════════
+// MODULES
+// ══════════════════════════════
+const MODULES = {
+  tutoring:{
+    en:{label:'Subject tutoring',sub:'Guided questions — no direct answers'},
+    zh:{label:'学科辅导',sub:'苏格拉底式引导，不直接给答案'},
+    system:`You are an educational AI tutor using the Socratic method.
+RULES:
+- NEVER give direct answers. Always respond with a guiding question or hint.
+- Adjust difficulty based on the student's responses.
+- If asked for a direct answer, gently explain your principle and redirect.
+- When citing facts, always note the source. One guiding question at a time.
+- Be warm and encouraging. If files or images are described, discuss them Socratically.`
+  },
+  essay:{
+    en:{label:'Essay feedback',sub:'Prompts to help you improve your own writing'},
+    zh:{label:'作文批改',sub:'提问引导，帮你自己发现和改进问题'},
+    system:`You are an educational AI tutor helping students improve their essays using the Socratic method.
+RULES:
+- NEVER rewrite or directly fix the student's writing.
+- Ask questions that help students identify and fix issues themselves.
+- If an essay or document is uploaded/described, ask Socratic questions about it.
+- Guide on structure, argument, evidence, and clarity through questioning.`
+  },
+  discussion:{
+    en:{label:'Topic discussion',sub:'Explore ideas with cited academic sources'},
+    zh:{label:'话题讨论',sub:'探讨观点，引用真实学术来源'},
+    system:`You are an educational AI tutor facilitating academic topic discussions.
+RULES:
+- Present multiple perspectives fairly. ALWAYS cite real sources with org, year, URL.
+- Guide students to form their own conclusions. Never invent citations.
+- If data files or images are described, discuss them with guiding questions.`
+  },
+  data:{
+    en:{label:'Data research',sub:'Find real data with proper academic citations'},
+    zh:{label:'数据收集',sub:'查找真实数据，标注学术来源'},
+    system:`You are an educational AI research assistant.
+RULES:
+- Only discuss real, verifiable data. ALWAYS cite: org, year, URL.
+- Never fabricate statistics. Help students evaluate sources via guiding questions.
+- If spreadsheets or data files are described, help students interpret them.`
+  }
+};
+
+// ══════════════════════════════
+// CONTENT MODERATION
+// ══════════════════════════════
+const FLAG_PATTERNS = {
+  profanity:/\b(fuck|shit|ass|bitch|damn|dick|cock|pussy|bastard|操|妈的|他妈|滚蛋|傻逼|sb|SB|二逼|狗逼|废物)\b/gi,
+  discrimination:/\b(racist|faggot|nigger|chink|gook|retard|homo|tranny|歧视|种族|死同性恋|残废)\b/gi,
+  self_harm:/\b(kill myself|suicide|self.harm|cut myself|end my life|want to die|杀了自己|自杀|割腕|不想活|想死)\b/gi,
+  inappropriate:/\b(porn|nude|naked|毒品|赌博|色情)\b/gi
+};
+
+async function checkContent(text,convId){
+  if(!currentUser||!sb||isSimulating) return;
+  const{data:p}=await sb.from('profiles').select('class_id').eq('id',currentUser.id).single();
+  const classId=p?.class_id||null;
+  for(const[type,pat] of Object.entries(FLAG_PATTERNS)){
+    if(pat.test(text)){
+      const severity=type==='self_harm'||type==='discrimination'?'high':'medium';
+      await sb.from('content_flags').insert({conversation_id:convId,user_id:currentUser.id,class_id:classId,message_text:text.slice(0,500),flag_type:type,severity});
+      break;
+    }
+  }
+}
+
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let lang='en', currentUser=null, currentRole=null;
+let currentModule='tutoring', currentConvId=null;
+let messages=[], isBusy=false, isSimulating=false;
+let pendingAttachments=[]; // {type:'file'|'image', name, dataUrl, mimeType}
+let inviteData=null;
+
+// ══════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goAuth(tab){
+  goScreen('s-auth');
+  switchAuthTab(tab);
+}
+
+// ══════════════════════════════
+// LANGUAGE
+// ══════════════════════════════
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-opt').forEach(b=>{
+    b.classList.toggle('active',(l==='en'&&b.textContent==='EN')||(l==='zh'&&b.textContent==='中文'));
+  });
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const k=el.getAttribute('data-i');
+    if(T[l][k]!==undefined) el.textContent=T[l][k];
+  });
+  document.getElementById('chat-input').placeholder=T[l].input_hint.split('·')[0].trim();
+  const invEl=document.getElementById('reg-invite');
+  if(invEl) invEl.placeholder=T[l].invite_placeholder||'Enter invite code';
+  if(currentConvId){
+    const m=MODULES[currentModule];
+    if(m){document.getElementById('ch-title').textContent=m[l].label;document.getElementById('ch-sub').textContent=m[l].sub;}
+  }
+  if(currentRole){
+    document.getElementById('role-badge').textContent=currentRole==='teacher'?T[l].role_label_t:T[l].role_label;
+  }
+  document.querySelectorAll('select option[data-i]').forEach(o=>{const k=o.getAttribute('data-i');if(T[l][k])o.textContent=T[l][k];});
+}
+
+// ══════════════════════════════
+// AUTH
+// ══════════════════════════════
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display=tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display=tab==='register'?'block':'none';
+  document.getElementById('auth-msg').className='auth-msg';
+  if(tab==='register') backToStep1();
+}
+function showAuthMsg(msg,type){const e=document.getElementById('auth-msg');e.textContent=msg;e.className='auth-msg '+type;}
+
+let selectedRole = null;
+
+function chooseRole(role){
+  selectedRole = role;
+  // Highlight selected card
+  const cards = ['student','teacher'];
+  cards.forEach(r => {
+    const card = document.getElementById('role-card-'+r);
+    if(card){
+      card.style.borderColor = r===role ? 'var(--gold)' : 'var(--bd2)';
+      card.style.background = r===role ? 'rgba(201,168,76,0.08)' : 'transparent';
+    }
+  });
+  // Show step 2
+  document.getElementById('reg-step1').style.display='none';
+  document.getElementById('reg-step2').style.display='block';
+  // Set role label
+  const icons = {student:'👨‍🎓', teacher:'👩‍🏫'};
+  const labels = {student: T[lang].role_student, teacher: T[lang].role_teacher};
+  document.getElementById('reg-role-display').textContent = icons[role]+' '+labels[role];
+  // Set placeholder for invite code
+  const placeholder = role==='student' ? (lang==='zh'?'例：CLASS001':'e.g. CLASS001') : (lang==='zh'?'例：TEACHER2024':'e.g. TEACHER2024');
+  document.getElementById('reg-invite').placeholder = placeholder;
+  document.getElementById('reg-invite').value = '';
+  document.getElementById('invite-hint').textContent = '';
+  document.getElementById('class-field').style.display='none';
+  inviteData = null;
+}
+
+function backToStep1(){
+  selectedRole = null;
+  inviteData = null;
+  document.getElementById('reg-step1').style.display='block';
+  document.getElementById('reg-step2').style.display='none';
+  document.getElementById('reg-invite').value='';
+  document.getElementById('invite-hint').textContent='';
+  document.getElementById('class-field').style.display='none';
+  // Reset card styles
+  ['student','teacher'].forEach(r=>{
+    const card=document.getElementById('role-card-'+r);
+    if(card){card.style.borderColor='var(--bd2)';card.style.background='transparent';}
+  });
+}
+
+async function onInviteInput(){
+  const code=document.getElementById('reg-invite').value.trim().toUpperCase();
+  const hint=document.getElementById('invite-hint');
+  const cf=document.getElementById('class-field');
+  inviteData=null;
+  if(code.length<4){hint.textContent='';cf.style.display='none';return;}
+  if(!sb)return;
+  // Note: invite_codes are checked during registration (user not yet logged in)
+  // We use a direct REST call with anon key to bypass auth requirement
+  let data=null;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/invite_codes?code=eq.${encodeURIComponent(code)}&is_active=eq.true&select=*`,{
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
+    });
+    const arr=await res.json();
+    data=arr&&arr.length?arr[0]:null;
+  }catch(e){data=null;}
+  if(!data){hint.style.color='#f87171';hint.textContent=T[lang].invite_invalid;cf.style.display='none';return;}
+  // Check role matches what user selected
+  if(selectedRole && data.role !== selectedRole){
+    const wrongRoleLabel = data.role==='teacher' ? T[lang].role_teacher : T[lang].role_student;
+    hint.style.color='#f87171';
+    hint.textContent=(T[lang].invite_wrong_role||'This code is for a {role}.').replace('{role}',wrongRoleLabel);
+    cf.style.display='none';
+    inviteData=null;
+    return;
+  }
+  inviteData=data;
+  if(data.role==='teacher'){
+    hint.style.color='var(--gr)';hint.textContent='✓ '+T[lang].invite_teacher;cf.style.display='none';
+  } else {
+    let cname='';
+    if(data.class_id){const{data:cls}=await sb.from('classes').select('name').eq('id',data.class_id).single();cname=cls?.name||'';}
+    hint.style.color='var(--gr)';hint.textContent='✓ '+T[lang].invite_student+' '+cname;
+    document.getElementById('class-display').textContent=cname||'—';
+    cf.style.display='block';
+  }
+}
+
+async function doLogin(){
+  if(!sb)return showAuthMsg('Supabase not configured.','error');
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass)return showAuthMsg(lang==='zh'?'请填写所有字段。':'Please fill in all fields.','error');
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error)return showAuthMsg(error.message,'error');
+  await loadUser(data.user);
+}
+
+async function doRegister(){
+  if(!sb)return showAuthMsg('Supabase not configured.','error');
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const inviteCode=document.getElementById('reg-invite').value.trim().toUpperCase();
+  if(!name||!email||!pass||!inviteCode)return showAuthMsg(lang==='zh'?'请填写所有字段。':'Please fill in all fields.','error');
+  if(pass.length<8)return showAuthMsg(lang==='zh'?'密码至少8位。':'Password must be at least 8 characters.','error');
+  if(!inviteData)return showAuthMsg(T[lang].invite_invalid,'error');
+  const role=inviteData.role;
+  const classId=inviteData.class_id||null;
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,role}}});
+  if(error)return showAuthMsg(error.message,'error');
+  await sb.from('profiles').upsert({id:data.user.id,full_name:name,role,class_id:classId});
+  await sb.from('invite_codes').update({used_by:data.user.id,used_at:new Date().toISOString(),is_active:false}).eq('code',inviteCode);
+  showAuthMsg(lang==='zh'?'账号创建成功！请登录。':'Account created! You can now sign in.','success');
+  switchAuthTab('login');
+}
+
+async function doSignOut(){await sb.auth.signOut();location.reload();}
+
+async function loadUser(user){
+  currentUser=user;
+  const{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  currentRole=p?.role||user.user_metadata?.role||'student';
+  const name=p?.full_name||user.email;
+  document.getElementById('tb-user').textContent=name;
+  const badge=document.getElementById('role-badge');
+  badge.textContent=currentRole==='teacher'?T[lang].role_label_t:T[lang].role_label;
+  badge.className='role-pill rp-'+currentRole;
+  setLang(lang);
+  if(currentRole==='student'){
+    if(!p?.class_id){
+      // Student has no class yet — show class selection
+      await showClassSelect();
+    } else {
+      enterStudentApp();
+    }
+  } else {
+    // Teacher — check if they have any linked classes
+    const{data:links}=await sb.from('teacher_classes').select('id').eq('teacher_id',user.id).limit(1);
+    if(!links||links.length===0){
+      await showTeacherOnboard();
+    } else {
+      enterTeacherApp();
+    }
+  }
+}
+
+// ── STUDENT: CLASS SELECT ──
+let selectedClassId=null;
+
+async function showClassSelect(){
+  goScreen('s-class-select');
+  setLang(lang);
+  const list=document.getElementById('class-select-list');
+  list.innerHTML=`<div style="padding:14px;font-size:12px;color:var(--mu);">${T[lang].loading||'Loading...'}</div>`;
+  const{data:classes}=await sb.from('classes').select('*').order('grade').order('name');
+  if(!classes||!classes.length){
+    list.innerHTML=`<div style="padding:14px;font-size:12px;color:var(--mu);">No classes available yet. Ask your teacher.</div>`;
+    return;
+  }
+  // Group by grade
+  const byGrade={};
+  classes.forEach(c=>{const g=c.grade||'Other';if(!byGrade[g])byGrade[g]=[];byGrade[g].push(c);});
+  list.innerHTML=Object.entries(byGrade).map(([grade,cls])=>`
+    <div style="padding:8px 14px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--su);background:var(--sf2);">${esc(grade)}</div>
+    ${cls.map(c=>`
+      <div class="class-select-row" data-id="${c.id}" onclick="pickClass('${c.id}',this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--bd2);flex-shrink:0;" class="pick-dot"></div>
+        <span style="font-size:13px;">${esc(c.name)}</span>
+        ${c.description?`<span style="font-size:11px;color:var(--mu);">${esc(c.description)}</span>`:''}
+      </div>`).join('')}
+  `).join('');
+}
+
+function pickClass(id,el){
+  selectedClassId=id;
+  document.querySelectorAll('.class-select-row').forEach(r=>{
+    r.style.background='transparent';
+    r.querySelector('.pick-dot').style.background='var(--bd2)';
+  });
+  el.style.background='var(--gr-bg)';
+  el.querySelector('.pick-dot').style.background='var(--gr)';
+}
+
+async function confirmClassSelection(){
+  if(!selectedClassId){
+    const msg=document.getElementById('class-select-msg');
+    msg.textContent=lang==='zh'?'请先选择一个班级。':'Please select a class first.';
+    msg.style.display='block';
+    return;
+  }
+  await sb.from('profiles').update({class_id:selectedClassId}).eq('id',currentUser.id);
+  enterStudentApp();
+}
+
+function enterStudentApp(){
+  goScreen('s-app');
+  document.getElementById('sidebar').style.display='flex';
+  document.getElementById('chat-area').style.display='flex';
+  document.getElementById('teacher-panel').style.display='none';
+  loadConversations();
+}
+
+// ── TEACHER: ONBOARDING ──
+let obSelectedClassId=null;
+
+async function showTeacherOnboard(){
+  goScreen('s-teacher-onboard');
+  setLang(lang);
+  hideOnboardPanel();
+}
+
+function showOnboardPanel(type){
+  hideOnboardPanel();
+  ['create','link'].forEach(t=>{
+    const card=document.getElementById('ob-card-'+t);
+    if(card){card.style.borderColor=t===type?'var(--gold)':'var(--bd2)';card.style.background=t===type?'rgba(201,168,76,.08)':'transparent';}
+  });
+  document.getElementById('ob-panel-'+type).style.display='block';
+  if(type==='link') loadOnboardClasses();
+}
+
+function hideOnboardPanel(){
+  ['create','link'].forEach(t=>{
+    const p=document.getElementById('ob-panel-'+t);
+    if(p)p.style.display='none';
+    const c=document.getElementById('ob-card-'+t);
+    if(c){c.style.borderColor='var(--bd2)';c.style.background='transparent';}
+  });
+  obSelectedClassId=null;
+}
+
+async function loadOnboardClasses(){
+  const el=document.getElementById('ob-all-classes');
+  if(!el)return;
+  el.innerHTML=`<div style="padding:12px 14px;font-size:12px;color:var(--mu);">${T[lang].loading||'Loading...'}</div>`;
+  const{data:classes}=await sb.from('classes').select('*').order('grade').order('name');
+  if(!classes||!classes.length){el.innerHTML=`<div style="padding:12px 14px;font-size:12px;color:var(--mu);">${lang==='zh'?'暂无班级，请先创建。':'No classes yet. Create one first.'}</div>`;return;}
+  const byGrade={};
+  classes.forEach(c=>{const g=c.grade||'Other';if(!byGrade[g])byGrade[g]=[];byGrade[g].push(c);});
+  el.innerHTML=Object.entries(byGrade).map(([grade,cls])=>`
+    <div style="padding:7px 14px 3px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--su);background:var(--sf2);">${esc(grade)}</div>
+    ${cls.map(c=>`
+      <div class="ob-class-row" data-id="${c.id}" onclick="pickObClass('${c.id}',this)" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--bd2);flex-shrink:0;" class="ob-dot"></div>
+        <span style="font-size:13px;font-weight:500;">${esc(c.name)}</span>
+        <span style="font-size:11px;color:var(--mu);">${esc(grade)}</span>
+      </div>`).join('')}
+  `).join('');
+}
+
+function pickObClass(id,el){
+  obSelectedClassId=id;
+  document.querySelectorAll('.ob-class-row').forEach(r=>{r.style.background='transparent';r.querySelector('.ob-dot').style.background='var(--bd2)';});
+  el.style.background='rgba(201,168,76,.08)';el.querySelector('.ob-dot').style.background='var(--gold)';
+}
+
+async function onboardCreateClass(){
+  const grade=document.getElementById('ob-grade').value.trim();
+  const name=document.getElementById('ob-class-name').value.trim();
+  const desc=document.getElementById('ob-class-desc').value.trim();
+  const msg=document.getElementById('ob-msg');
+  if(!grade||!name){msg.textContent=lang==='zh'?'请填写年级和班级名称。':'Please fill in grade and class name.';msg.style.display='block';return;}
+  msg.style.display='none';
+  const{data,error}=await sb.from('classes').insert({name,grade,description:desc,created_by:currentUser.id}).select().single();
+  if(error){msg.textContent='Error: '+error.message;msg.style.display='block';return;}
+  await sb.from('teacher_classes').insert({teacher_id:currentUser.id,class_id:data.id});
+  enterTeacherApp();
+}
+
+async function onboardLinkClass(){
+  const msg=document.getElementById('ob-msg');
+  if(!obSelectedClassId){msg.textContent=lang==='zh'?'请先选择一个班级。':'Please select a class first.';msg.style.display='block';return;}
+  msg.style.display='none';
+  await sb.from('teacher_classes').upsert({teacher_id:currentUser.id,class_id:obSelectedClassId});
+  enterTeacherApp();
+}
+
+function enterDashboardAnyway(){enterTeacherApp();}
+
+function enterTeacherApp(){
+  goScreen('s-app');
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('chat-area').style.display='none';
+  document.getElementById('teacher-panel').style.display='block';
+}
+
+(async()=>{
+  if(!sb){console.warn('Supabase not configured.');return;}
+  try{const{data:{session}}=await sb.auth.getSession();if(session)await loadUser(session.user);}
+  catch(e){console.error('Session check failed:',e);}
+})();
+
+// ══════════════════════════════
+// CONVERSATIONS
+// ══════════════════════════════
+async function loadConversations(){
+  const{data}=await sb.from('conversations').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+  const list=document.getElementById('conv-list');
+  list.innerHTML='';
+  if(!data||!data.length)return;
+  data.forEach(conv=>{
+    const div=document.createElement('div');
+    div.className='conv-item'+(conv.id===currentConvId?' active':'');
+    div.dataset.id=conv.id;
+    div.innerHTML=`<div class="conv-dot" style="background:${modColor(conv.module)}"></div><div class="conv-ttl">${esc(conv.title||'Untitled')}</div><div class="conv-time">${timeAgo(conv.updated_at)}</div><button class="conv-del" onclick="delConv(event,'${conv.id}')">✕</button>`;
+    div.addEventListener('click',()=>openConv(conv));
+    list.appendChild(div);
+  });
+}
+
+async function newConversation(){
+  if(isSimulating){
+    // In simulation: just reset chat, no DB
+    messages=[];pendingAttachments=[];
+    document.getElementById('attach-chips').innerHTML='';
+    renderMessages();
+    document.getElementById('empty-st').style.display='none';
+    document.getElementById('active-chat').style.display='flex';
+    return;
+  }
+  const mod=MODULES[currentModule];
+  const label=mod?mod[lang].label:currentModule;
+  const{data,error}=await sb.from('conversations').insert({user_id:currentUser.id,module:currentModule,title:label+' — '+new Date().toLocaleDateString(),messages:[]}).select().single();
+  if(error)return showToast(T[lang].toast_error);
+  await loadConversations();
+  openConv(data);
+}
+
+async function openConv(conv){
+  currentConvId=conv.id;currentModule=conv.module||'tutoring';
+  document.querySelectorAll('.mod-btn').forEach(b=>b.classList.toggle('active',b.dataset.module===conv.module));
+  const mod=MODULES[currentModule]||MODULES.tutoring;
+  document.getElementById('ch-title').textContent=mod[lang].label;
+  document.getElementById('ch-sub').textContent=mod[lang].sub;
+  messages=conv.messages||[];
+  pendingAttachments=[];
+  document.getElementById('attach-chips').innerHTML='';
+  renderMessages();
+  document.getElementById('empty-st').style.display='none';
+  document.getElementById('active-chat').style.display='flex';
+  document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id===conv.id));
+}
+
+function closeConversation(){
+  currentConvId=null;messages=[];pendingAttachments=[];
+  document.getElementById('attach-chips').innerHTML='';
+  document.getElementById('active-chat').style.display='none';
+  document.getElementById('empty-st').style.display='flex';
+  document.querySelectorAll('.conv-item').forEach(el=>el.classList.remove('active'));
+}
+
+async function delConv(e,id){
+  e.stopPropagation();
+  await sb.from('conversations').delete().eq('id',id);
+  if(currentConvId===id)closeConversation();
+  await loadConversations();
+  showToast(T[lang].toast_deleted);
+}
+
+async function saveMessages(){
+  if(!currentConvId||isSimulating)return;
+  const fu=messages.find(m=>m.role==='user');
+  const title=fu?fu.content.replace(/<[^>]+>/g,'').slice(0,50)+(fu.content.length>50?'…':''):'Untitled';
+  await sb.from('conversations').update({messages,title,updated_at:new Date().toISOString()}).eq('id',currentConvId);
+  await loadConversations();
+}
+
+// ══════════════════════════════
+// MODULE SELECTION
+// ══════════════════════════════
+function selectModule(btn){
+  if(btn.classList.contains('locked'))return;
+  document.querySelectorAll('.mod-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentModule=btn.dataset.module;
+}
+
+// ══════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════
+function onFilesSelected(input){
+  const files=Array.from(input.files);
+  files.forEach(file=>{
+    const isImage=file.type.startsWith('image/');
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const att={type:isImage?'image':'file',name:file.name,dataUrl:e.target.result,mimeType:file.type};
+      pendingAttachments.push(att);
+      renderChips();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function renderChips(){
+  const chips=document.getElementById('attach-chips');
+  chips.innerHTML=pendingAttachments.map((a,i)=>`
+    <div class="chip">
+      <span>${a.type==='image'?'🖼️':'📎'} ${esc(a.name)}</span>
+      <button class="chip-remove" onclick="removeAttachment(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeAttachment(i){
+  pendingAttachments.splice(i,1);
+  renderChips();
+}
+
+function buildAttachmentContext(){
+  if(!pendingAttachments.length)return'';
+  return '\n\n[ATTACHMENTS]\n'+pendingAttachments.map(a=>{
+    if(a.type==='image')return`[Image: ${a.name}]`;
+    return`[File: ${a.name} (${a.mimeType})]`;
+  }).join('\n');
+}
+
+function buildAttachmentHTML(){
+  return pendingAttachments.map(a=>{
+    if(a.type==='image')return`<img class="msg-img" src="${a.dataUrl}" alt="${esc(a.name)}" onclick="window.open(this.src)">`;
+    return`<div class="attach-preview"><span class="attach-icon">📎</span><span class="attach-name">${esc(a.name)}</span></div>`;
+  }).join('');
+}
+
+// Build API messages including image attachments for MiniMax
+function buildApiMessages(systemPrompt){
+  const msgs=[{role:'system',content:systemPrompt}];
+  messages.forEach(m=>{
+    if(m.role==='user'&&m.attachments&&m.attachments.length){
+      // Send images as base64 content parts if MiniMax supports it
+      // For now we describe them in text
+      msgs.push({role:'user',content:m.content});
+    } else {
+      msgs.push({role:m.role==='user'?'user':'assistant',content:m.content});
+    }
+  });
+  return msgs;
+}
+
+// ══════════════════════════════
+// CHAT
+// ══════════════════════════════
+function renderMessages(){
+  const c=document.getElementById('messages');c.innerHTML='';
+  if(!messages.length){
+    const mod=MODULES[currentModule]||MODULES.tutoring;
+    addBubble('ai',T[lang].greeting.replace('{module}',mod[lang].label));
+    return;
+  }
+  messages.forEach(m=>addBubble(m.role==='user'?'user':'ai',m.displayContent||m.content));
+}
+
+function addBubble(who,html){
+  const c=document.getElementById('messages');
+  const row=document.createElement('div');
+  row.className='msg-row'+(who==='user'?' user':'');
+  const ini=who==='ai'?'M':(currentUser?.user_metadata?.full_name?.[0]?.toUpperCase()||'S');
+  row.innerHTML=`<div class="av ${who==='ai'?'av-ai':'av-me'}">${ini}</div><div class="bbl ${who==='ai'?'bbl-ai':'bbl-user'}">${html}</div>`;
+  c.appendChild(row);c.scrollTop=c.scrollHeight;return row;
+}
+
+function addTyping(){
+  const c=document.getElementById('messages');
+  const row=document.createElement('div');row.className='typing-row';
+  row.innerHTML='<div class="av av-ai">M</div><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  c.appendChild(row);c.scrollTop=c.scrollHeight;return row;
+}
+
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  if((!text&&!pendingAttachments.length)||isBusy)return;
+  if(!currentConvId&&!isSimulating)return showToast(T[lang].toast_no_conv);
+  input.value='';input.style.height='auto';
+  isBusy=true;document.getElementById('send-btn').disabled=true;
+
+  const attachCtx=buildAttachmentContext();
+  const attachHTML=buildAttachmentHTML();
+  const fullContent=text+(attachCtx?'\n'+attachCtx:'');
+  const displayHTML=attachHTML+(text?'<br>':'')+(text?fmt(text):'');
+
+  addBubble('user',attachHTML+(attachHTML&&text?'<br>':'')+fmt(text));
+  messages.push({role:'user',content:fullContent,displayContent:displayHTML,attachments:[...pendingAttachments]});
+  pendingAttachments=[];
+  document.getElementById('attach-chips').innerHTML='';
+
+  if(!isSimulating) checkContent(text,currentConvId);
+
+  const typing=addTyping();
+  const mod=MODULES[currentModule]||MODULES.tutoring;
+  const langNote=lang==='zh'?'\n\nIMPORTANT: Respond in Simplified Chinese.':'';
+  const mmMsgs=buildApiMessages(mod.system+langNote);
+
+  try{
+    const res=await fetch('https://api.minimaxi.chat/v1/text/chatcompletion_v2',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+MINIMAX_API_KEY},
+      body:JSON.stringify({model:'MiniMax-M2.7',messages:mmMsgs,max_tokens:1000,temperature:0.7})
+    });
+    const d=await res.json();typing.remove();
+    const reply=d.choices?.[0]?.message?.content||(lang==='zh'?'出现了一点问题，请再试一次。':'Something went wrong — please try again.');
+    addBubble('ai',fmt(reply));
+    messages.push({role:'assistant',content:reply});
+    await saveMessages();
+  }catch(err){
+    typing.remove();
+    addBubble('ai',fmt(lang==='zh'?'连接出现问题，请稍后再试。':'Connection error — please try again.'));
+  }
+  isBusy=false;document.getElementById('send-btn').disabled=false;
+}
+
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+// ══════════════════════════════
+// TEACHER: SIMULATION MODE
+// ══════════════════════════════
+function simulateModule(moduleKey){
+  isSimulating=true;
+  currentModule=moduleKey;
+  currentConvId=null;
+  messages=[];pendingAttachments=[];
+  // Show student UI with sim banner
+  document.getElementById('teacher-panel').style.display='none';
+  document.getElementById('sidebar').style.display='flex';
+  document.getElementById('chat-area').style.display='flex';
+  document.getElementById('sim-banner').style.display='flex';
+  document.getElementById('sim-badge').style.display='inline-block';
+  // Select module in sidebar
+  document.querySelectorAll('.mod-btn').forEach(b=>b.classList.toggle('active',b.dataset.module===moduleKey));
+  const mod=MODULES[moduleKey]||MODULES.tutoring;
+  document.getElementById('ch-title').textContent=mod[lang].label;
+  document.getElementById('ch-sub').textContent=mod[lang].sub;
+  document.getElementById('empty-st').style.display='none';
+  document.getElementById('active-chat').style.display='flex';
+  renderMessages();
+  setLang(lang);
+}
+
+function exitSimulation(){
+  isSimulating=false;
+  messages=[];pendingAttachments=[];
+  document.getElementById('sim-banner').style.display='none';
+  document.getElementById('sim-badge').style.display='none';
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('chat-area').style.display='none';
+  document.getElementById('active-chat').style.display='none';
+  document.getElementById('empty-st').style.display='flex';
+  document.getElementById('teacher-panel').style.display='block';
+}
+
+// ══════════════════════════════
+// TEACHER: TABS
+// ══════════════════════════════
+function tTab(btn,id){
+  document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['t-ov','t-st','t-cl','t-fl','t-mo'].forEach(t=>{
+    const el=document.getElementById(t);if(el)el.style.display=t===id?'block':'none';
+  });
+  if(id==='t-cl'){loadTeacherClasses();loadInviteCodes();}
+  if(id==='t-fl'){loadFlags();}
+}
+function toggleLog(id){document.getElementById(id).classList.toggle('open');}
+function flipTog(el){el.classList.toggle('on');el.classList.toggle('off');}
+
+// ══════════════════════════════
+// TEACHER: CLASSES
+// ══════════════════════════════
+async function loadTeacherClasses(){
+  if(!sb||!currentUser)return;
+  const{data:linked}=await sb.from('teacher_classes').select('class_id,classes(id,name)').eq('teacher_id',currentUser.id);
+  const linkedIds=(linked||[]).map(r=>r.class_id);
+  const{data:all}=await sb.from('classes').select('*').order('name');
+  const lEl=document.getElementById('linked-classes-list');
+  const aEl=document.getElementById('all-classes-list');
+  if(!lEl||!aEl)return;
+  // Helper: group by grade
+  function groupByGrade(arr){const g={};arr.forEach(c=>{const k=c.classes?.grade||c.grade||'Other';if(!g[k])g[k]=[];g[k].push(c);});return g;}
+  lEl.innerHTML=!linked||!linked.length
+    ?`<div style="font-size:12px;color:var(--mu);padding:8px 0;">${lang==='zh'?'暂无关联班级。':'No linked classes yet.'}</div>`
+    :Object.entries(groupByGrade(linked)).map(([grade,rows])=>`
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--su);padding:6px 8px 2px;">${esc(grade)}</div>
+      ${rows.map(r=>`<div class="class-row"><div class="cdot cd-on"></div><span style="flex:1;font-weight:500;">${esc(r.classes?.name||'')}</span><button class="act-btn" onclick="unlinkClass('${r.class_id}')">${lang==='zh'?'取消关联':'Unlink'}</button></div>`).join('')}
+    `).join('');
+  const unlinked=(all||[]).filter(c=>!linkedIds.includes(c.id));
+  aEl.innerHTML=!unlinked.length
+    ?`<div style="font-size:12px;color:var(--mu);padding:8px 0;">${lang==='zh'?'所有班级已关联。':'All classes already linked.'}</div>`
+    :Object.entries(groupByGrade(unlinked.map(c=>({...c,classes:c})))).map(([grade,cls])=>`
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--su);padding:6px 8px 2px;">${esc(grade)}</div>
+      ${cls.map(c=>`<div class="class-row" onclick="linkClass('${c.id}')"><div class="cdot cd-off"></div><span style="flex:1;">${esc(c.name)}</span><span style="font-size:11px;color:var(--mu);">${lang==='zh'?'点击关联':'Click to link'}</span></div>`).join('')}
+    `).join('');
+}
+
+async function linkClass(id){
+  await sb.from('teacher_classes').insert({teacher_id:currentUser.id,class_id:id});
+  showToast(T[lang].toast_linked);loadTeacherClasses();loadInviteCodes();
+}
+async function unlinkClass(id){
+  await sb.from('teacher_classes').delete().eq('teacher_id',currentUser.id).eq('class_id',id);
+  showToast(T[lang].toast_unlinked);loadTeacherClasses();
+}
+async function createClass(){
+  const grade=document.getElementById('new-class-grade').value.trim();
+  const name=document.getElementById('new-class-name').value.trim();
+  if(!name)return;
+  const desc=document.getElementById('new-class-desc').value.trim();
+  const{data,error}=await sb.from('classes').insert({name,grade:grade||'',description:desc,created_by:currentUser.id}).select().single();
+  if(error){showToast('Error: '+error.message);return;}
+  await sb.from('teacher_classes').insert({teacher_id:currentUser.id,class_id:data.id});
+  document.getElementById('create-class-form').style.display='none';
+  document.getElementById('new-class-name').value='';
+  document.getElementById('new-class-desc').value='';
+  showToast(T[lang].toast_class_created);loadTeacherClasses();
+}
+function showCreateClass(){
+  document.getElementById('create-class-form').style.display='block';
+  document.getElementById('gen-code-form').style.display='none';
+}
+
+// ══════════════════════════════
+// TEACHER: INVITE CODES
+// ══════════════════════════════
+async function loadInviteCodes(){
+  if(!sb||!currentUser)return;
+  const{data}=await sb.from('invite_codes').select('*,classes(name)').eq('created_by',currentUser.id).order('created_at',{ascending:false}).limit(20);
+  const el=document.getElementById('invite-codes-list');
+  if(!el)return;
+  if(!data||!data.length){el.innerHTML=`<div style="font-size:12px;color:var(--mu);padding:8px 0;">${lang==='zh'?'暂无邀请码。':'No invite codes yet.'}</div>`;return;}
+  el.innerHTML=data.map(c=>`
+    <div class="code-row ${c.is_active?'':'code-used'}">
+      <span class="code-val">${esc(c.code)}</span>
+      <span style="font-size:11px;color:var(--mu);min-width:80px;">${c.role==='teacher'?'👩‍🏫':'👨‍🎓 '+esc(c.classes?.name||'')}</span>
+      <span style="font-size:10px;color:${c.is_active?'var(--gr)':'var(--su)'};">${c.is_active?(lang==='zh'?'有效':'Active'):(lang==='zh'?'已使用':'Used')}</span>
+      ${c.is_active?`<button class="act-btn" onclick="deactivateCode('${c.id}')">${lang==='zh'?'停用':'Deactivate'}</button>`:''}
+    </div>`).join('');
+}
+
+async function deactivateCode(id){
+  await sb.from('invite_codes').update({is_active:false}).eq('id',id);
+  showToast(T[lang].toast_code_deactivated);loadInviteCodes();
+}
+
+function showGenCode(){
+  document.getElementById('gen-code-form').style.display='block';
+  document.getElementById('create-class-form').style.display='none';
+  document.getElementById('gen-code-result').style.display='none';
+  onGenRoleChange();
+}
+function onGenRoleChange(){
+  const role=document.getElementById('gen-code-role').value;
+  const cf=document.getElementById('gen-code-class-field');
+  const cs=document.getElementById('gen-code-class-id');
+  cf.style.display=role==='student'?'block':'none';
+  if(role==='student'&&sb){
+    sb.from('teacher_classes').select('class_id,classes(id,name)').eq('teacher_id',currentUser.id).then(({data})=>{
+      cs.innerHTML=(data||[]).map(r=>`<option value="${r.class_id}">${esc(r.classes?.name||r.class_id)}</option>`).join('');
+    });
+  }
+}
+async function generateInviteCode(){
+  const role=document.getElementById('gen-code-role').value;
+  const classId=role==='student'?document.getElementById('gen-code-class-id').value:null;
+  const code=Math.random().toString(36).substring(2,6).toUpperCase()+Math.random().toString(36).substring(2,6).toUpperCase();
+  const{error}=await sb.from('invite_codes').insert({code,role,class_id:classId,created_by:currentUser.id,is_active:true});
+  if(error){showToast('Error: '+error.message);return;}
+  const resultEl=document.getElementById('gen-code-result');
+  resultEl.style.display='block';
+  const className=role==='student'?document.getElementById('gen-code-class-id').options[document.getElementById('gen-code-class-id').selectedIndex]?.text:'';
+  resultEl.innerHTML=`<strong>${lang==='zh'?'新邀请码：':'New code: '}</strong><span style="font-family:monospace;font-size:16px;color:var(--gold);">${code}</span><br><span style="font-size:11px;color:var(--mu);">${role==='teacher'?'Teacher':('Student — '+className)}</span>`;
+  loadInviteCodes();
+}
+
+// ══════════════════════════════
+// TEACHER: FLAGS
+// ══════════════════════════════
+async function loadFlags(){
+  if(!sb||!currentUser)return;
+  const filterEl=document.getElementById('flag-filter');
+  const filter=filterEl?filterEl.value:'all';
+  let q=sb.from('content_flags').select('*,profiles(full_name)').order('created_at',{ascending:false}).limit(50);
+  if(filter!=='all')q=q.eq('is_reviewed',filter==='true');
+  const{data}=await q;
+  const el=document.getElementById('flags-list');
+  if(!el)return;
+  if(!data||!data.length){el.innerHTML=`<div style="font-size:12px;color:var(--mu);padding:12px 0;">${lang==='zh'?'暂无标记消息。':'No flagged messages.'}</div>`;return;}
+  el.innerHTML=data.map(f=>`
+    <div class="flag-row ${f.is_reviewed?'reviewed':''}" onclick="markFlagReviewed('${f.id}','${!f.is_reviewed}')">
+      <span class="flag-type ft-${f.flag_type}">${f.flag_type}</span>
+      <div class="flag-body">
+        <div class="flag-msg">"${esc(f.message_text)}"</div>
+        <div class="flag-meta">${esc(f.profiles?.full_name||'Unknown')} · ${new Date(f.created_at).toLocaleString()} · ${f.severity}</div>
+      </div>
+      <span class="flag-ck">${f.is_reviewed?'✓':'→'}</span>
+    </div>`).join('');
+}
+
+async function markFlagReviewed(id,reviewed){
+  await sb.from('content_flags').update({is_reviewed:reviewed==='true',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',id);
+  loadFlags();
+}
+
+// ══════════════════════════════
+// HELPERS
+// ══════════════════════════════
+function fmt(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function modColor(m){return{tutoring:'#6c8ebf',essay:'#c06070',discussion:'#5aa87a',data:'#c9a84c'}[m]||'#555';}
+function timeAgo(iso){
+  const d=Date.now()-new Date(iso),m=Math.floor(d/60000);
+  if(m<1)return T[lang].timeNow;
+  if(m<60)return m+T[lang].timeM;
+  const h=Math.floor(m/60);
+  if(h<24)return h+T[lang].timeH;
+  return Math.floor(h/24)+T[lang].timeD;
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
